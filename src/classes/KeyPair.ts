@@ -2,17 +2,38 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
-import { computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
-import { RandomNumber } from './RandomNumber';
-import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
-import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
+import {
+  getSharedSecret as secpGetSharedSecret,
+  utils,
+  getPublicKey,
+  Point,
+  CURVE,
+} from "noble-secp256k1";
+import {
+  computeAddress,
+  hexlify,
+  hexZeroPad,
+  isHexString,
+  sha256,
+  BigNumber,
+} from "../ethers";
+import { RandomNumber } from "./RandomNumber";
+import {
+  assertValidPoint,
+  lengths,
+  recoverPublicKeyFromTransaction,
+} from "../utils/utils";
+import {
+  CompressedPublicKey,
+  EncryptedPayload,
+  EthersProvider,
+} from "../types";
 
 // List of private or public keys that we disallow initializing a KeyPair instance with, since they will lead to
 // unrecoverable funds.
 const blockedKeys = [
-  '0x0000000000000000000000000000000000000000000000000000000000000000', // private key of all zeros
-  '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', // public key of all zeroes
+  "0x0000000000000000000000000000000000000000000000000000000000000000", // private key of all zeros
+  "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", // public key of all zeroes
 ];
 
 /**
@@ -23,13 +44,19 @@ const blockedKeys = [
  */
 function getSharedSecret(privateKey: string, publicKey: string) {
   assertValidPoint(publicKey);
-  if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
-  if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
+  if (privateKey.length !== lengths.privateKey || !isHexString(privateKey))
+    throw new Error("Invalid private key");
+  if (publicKey.length !== lengths.publicKey || !isHexString(publicKey))
+    throw new Error("Invalid public key");
 
   // We use sharedSecret.slice(2) to ensure the shared secret is not dependent on the prefix, which enables
   // us to uncompress ephemeralPublicKey from SPayment.sol logs as explained in comments of getUncompressedFromX.
   // Note that a shared secret is really just a point on the curve, so it's an uncompressed public key
-  const sharedSecret = secpGetSharedSecret(privateKey.slice(2), publicKey.slice(2), true) as string; // has 04 prefix but not 0x
+  const sharedSecret = secpGetSharedSecret(
+    privateKey.slice(2),
+    publicKey.slice(2),
+    true
+  ) as string; // has 04 prefix but not 0x
   return sha256(`0x${sharedSecret.slice(2)}`);
 }
 
@@ -43,11 +70,11 @@ export class KeyPair {
    */
   constructor(key: string) {
     // Input checks
-    if (typeof key !== 'string' || !isHexString(key)) {
-      throw new Error('Key must be a string in hex format with 0x prefix');
+    if (typeof key !== "string" || !isHexString(key)) {
+      throw new Error("Key must be a string in hex format with 0x prefix");
     }
     if (blockedKeys.includes(key)) {
-      throw new Error('Cannot initialize KeyPair with the provided key');
+      throw new Error("Cannot initialize KeyPair with the provided key");
     }
 
     // Handle input
@@ -61,7 +88,9 @@ export class KeyPair {
       assertValidPoint(key); // throw if point is not on curve
       this.publicKeyHex = key; // Save off public key, other forms computed as getters
     } else {
-      throw new Error('Key must be a 66 character hex private key or a 132 character hex public key');
+      throw new Error(
+        "Key must be a 66 character hex private key or a 132 character hex public key"
+      );
     }
   }
 
@@ -97,12 +126,17 @@ export class KeyPair {
    */
   encrypt(number: RandomNumber): EncryptedPayload {
     if (!(number instanceof RandomNumber)) {
-      throw new Error('Must provide instance of RandomNumber');
+      throw new Error("Must provide instance of RandomNumber");
     }
     // Get shared secret to use as encryption key
     const ephemeralPrivateKey = hexlify(utils.randomPrivateKey()); // private key as hex with 0x prefix
-    const ephemeralPublicKey = `0x${getPublicKey(ephemeralPrivateKey.slice(2))}`; // public key as hex with 0x prefix
-    const sharedSecret = getSharedSecret(ephemeralPrivateKey, this.publicKeyHex);
+    const ephemeralPublicKey = `0x${getPublicKey(
+      ephemeralPrivateKey.slice(2)
+    )}`; // public key as hex with 0x prefix
+    const sharedSecret = getSharedSecret(
+      ephemeralPrivateKey,
+      this.publicKeyHex
+    );
 
     // XOR random number with shared secret to get encrypted value
     const ciphertextBN = number.value.xor(sharedSecret);
@@ -118,15 +152,18 @@ export class KeyPair {
   decrypt(output: EncryptedPayload) {
     const { ephemeralPublicKey, ciphertext } = output;
     if (!ephemeralPublicKey || !ciphertext) {
-      throw new Error('Input must be of type EncryptedPayload to decrypt');
+      throw new Error("Input must be of type EncryptedPayload to decrypt");
     }
     if (!this.privateKeyHex) {
-      throw new Error('KeyPair has no associated private key to decrypt with');
+      throw new Error("KeyPair has no associated private key to decrypt with");
     }
     assertValidPoint(ephemeralPublicKey); // throw if point is not on curve
 
     // Get shared secret to use as decryption key, then decrypt with XOR
-    const sharedSecret = getSharedSecret(this.privateKeyHex, ephemeralPublicKey);
+    const sharedSecret = getSharedSecret(
+      this.privateKeyHex,
+      ephemeralPublicKey
+    );
     const plaintext = BigNumber.from(ciphertext).xor(sharedSecret);
     return hexZeroPad(plaintext.toHexString(), 32);
   }
@@ -137,11 +174,11 @@ export class KeyPair {
    * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
    */
   mulPublicKey(value: RandomNumber | string) {
-    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
-      throw new Error('Input must be instance of RandomNumber or string');
+    if (!(value instanceof RandomNumber) && typeof value !== "string") {
+      throw new Error("Input must be instance of RandomNumber or string");
     }
-    if (typeof value === 'string' && !value.startsWith('0x')) {
-      throw new Error('Strings must be in hex form with 0x prefix');
+    if (typeof value === "string" && !value.startsWith("0x")) {
+      throw new Error("Strings must be in hex form with 0x prefix");
     }
 
     // Parse number based on input type
@@ -159,14 +196,14 @@ export class KeyPair {
    * @param value number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
   mulPrivateKey(value: RandomNumber | string) {
-    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
-      throw new Error('Input must be instance of RandomNumber or string');
+    if (!(value instanceof RandomNumber) && typeof value !== "string") {
+      throw new Error("Input must be instance of RandomNumber or string");
     }
-    if (typeof value === 'string' && !isHexString(value)) {
-      throw new Error('Strings must be in hex form with 0x prefix');
+    if (typeof value === "string" && !isHexString(value)) {
+      throw new Error("Strings must be in hex form with 0x prefix");
     }
     if (!this.privateKeyHex) {
-      throw new Error('KeyPair has no associated private key');
+      throw new Error("KeyPair has no associated private key");
     }
 
     // Parse number based on input type
@@ -177,7 +214,10 @@ export class KeyPair {
     // Get new private key. Multiplication gives us an arbitrarily large number that is not necessarily in the domain
     // of the secp256k1 curve, so then we use modulus operation to get in the correct range.
     const privateKeyBigInt = (BigInt(this.privateKeyHex) * number) % CURVE.n;
-    const privateKey = hexZeroPad(BigNumber.from(privateKeyBigInt).toHexString(), 32); // convert to 32 byte hex
+    const privateKey = hexZeroPad(
+      BigNumber.from(privateKeyBigInt).toHexString(),
+      32
+    ); // convert to 32 byte hex
     return new KeyPair(privateKey); // return new KeyPair instance
   }
 
@@ -187,11 +227,17 @@ export class KeyPair {
    * @param txHash Transaction hash to recover public key from
    * @param provider ethers provider to use
    */
-  static async instanceFromTransaction(txHash: string, provider: EthersProvider) {
-    if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {
-      throw new Error('Invalid transaction hash provided');
+  static async instanceFromTransaction(
+    txHash: string,
+    provider: EthersProvider
+  ) {
+    if (typeof txHash !== "string" || txHash.length !== lengths.txHash) {
+      throw new Error("Invalid transaction hash provided");
     }
-    const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
+    const publicKeyHex = await recoverPublicKeyFromTransaction(
+      txHash,
+      provider
+    );
     return new KeyPair(publicKeyHex);
   }
 
@@ -222,11 +268,17 @@ export class KeyPair {
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */
-  static getUncompressedFromX(pkx: BigNumber | string, prefix: number | string | undefined = undefined) {
-    if (!(pkx instanceof BigNumber) && typeof pkx !== 'string') {
-      throw new Error('Compressed public key must be a BigNumber or string');
+  static getUncompressedFromX(
+    pkx: BigNumber | string,
+    prefix: number | string | undefined = undefined
+  ) {
+    if (!(pkx instanceof BigNumber) && typeof pkx !== "string") {
+      throw new Error("Compressed public key must be a BigNumber or string");
     }
-    const hexWithoutPrefix = hexZeroPad(BigNumber.from(pkx).toHexString(), 32).slice(2); // pkx as hex string without 0x prefix
+    const hexWithoutPrefix = hexZeroPad(
+      BigNumber.from(pkx).toHexString(),
+      32
+    ).slice(2); // pkx as hex string without 0x prefix
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds
       return `0x${Point.fromHex(`02${hexWithoutPrefix}`).toHex()}`;

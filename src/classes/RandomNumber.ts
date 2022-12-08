@@ -3,8 +3,8 @@
  * @dev In the SPayment Protocol, all random numbers should be 32 bytes to ensure sufficient security
  */
 
-import { BigNumber, hexZeroPad } from '../ethers';
-import { utils } from 'noble-secp256k1';
+import { BigNumber, hexZeroPad } from "../ethers";
+import { utils } from "noble-secp256k1";
 
 export class RandomNumber {
   readonly sizeInBytes = 32; // generated random number will always be 32 bytes
@@ -18,7 +18,7 @@ export class RandomNumber {
     const randomNumberAsBytes = utils.randomPrivateKey();
     this.value = BigNumber.from(randomNumberAsBytes);
   }
- 
+
   /**
    * @notice Get random number as hex string
    * @notice 获取随机数的十六进制字符串

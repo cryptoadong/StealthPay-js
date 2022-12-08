@@ -1,4 +1,4 @@
-# umbra-js
+# spayment-js
 
 JavaScript library for interacting with the SPayment Protocol.
 
@@ -9,11 +9,11 @@ Requirements for use:
 - [ethers.js](https://docs.ethers.io/v5/single-page/) types are used throughout
 - [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) support. See browser compatibility [here](https://caniuse.com/bigint)
 
-Once verifying compatibility, install with `yarn add @scopelift/umbra-js`
+Once verifying compatibility, install with `yarn add @scopelift/spayment-js`
 
 ## Overview
 
-The umbra-js library aims to abstract away the math and cryptography required for using SPayment so it's easy to build on top of the SPayment protocol. Most documentation lives in the [FAQ](https://app.umbra.cash/faq), and the [Technical Details](https://app.umbra.cash/faq#technical-details) section provides a pretty thorough overview. Here we cover some of the documentation specific to umbra-js.
+The spayment-js library aims to abstract away the math and cryptography required for using SPayment so it's easy to build on top of the SPayment protocol. Most documentation lives in the [FAQ](https://app.spayment.cash/faq), and the [Technical Details](https://app.spayment.cash/faq#technical-details) section provides a pretty thorough overview. Here we cover some of the documentation specific to spayment-js.
 
 Below is an overview of the files within this library. If you like reading code to understand things, read in the order files are listed below. This will start from the full, big-picture view of how SPayment works then go into the details.
 
@@ -45,7 +45,7 @@ The shared secret used to encrypt the random number is 256 bits, so we XOR that 
 
 Since the XOR of these two parameters results in a 256 bit ciphertext of the same strength regardless of whether the random number is 128 bits or 256 bits, the `RandomNumber` class only generates a 128 bit random number, and lets the user provide the other 128 bits. This "free" 128 bits of data is known as the _payload extension_, and can be used to send short memos, recognize app-specific transactions, or whatever else developers can thing of.
 
-The corresponding FAQ question can be found [here](https://app.umbra.cash/faq#what-is-the-payload-extension-and-how-do-i-use-it).
+The corresponding FAQ question can be found [here](https://app.spayment.cash/faq#what-is-the-payload-extension-and-how-do-i-use-it).
 
 ### Private Key Generation
 
@@ -61,13 +61,13 @@ Borrowing the [nomenclature](https://electriccoin.co/blog/explaining-viewing-key
 
 This allows users to give their viewing key to third party scanning services that can alert them of received funds, but without giving those services access to their funds.
 
-The corresponding FAQ question can be found [here](https://app.umbra.cash/faq#what-are-spending-and-viewing-keys).
+The corresponding FAQ question can be found [here](https://app.spayment.cash/faq#what-are-spending-and-viewing-keys).
 
 ### Hooks
 
 If you’re familiar with [ERC-777](https://eips.ethereum.org/EIPS/eip-777) or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract.
 
-SPayment works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.umbra.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `SPayment.sol` for more information on hwo to use hooks.
+SPayment works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.spayment.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `SPayment.sol` for more information on hwo to use hooks.
 
 ## Usage Example
 
@@ -78,7 +78,7 @@ import { hexlify, hexZeroPad } from "@ethersproject/bytes";
 import { toUtf8Bytes } from "@ethersproject/strings";
 export { parseUnits } from "@ethersproject/units";
 
-import { SPayment } from "@scopelift/umbra-js";
+import { SPayment } from "@scopelift/spayment-js";
 import { signer } from "the/users/connected/wallet"; // assume user previously connected wallet and has signer
 
 // Define the special address the SPayment contract uses to represent ETH
@@ -104,8 +104,8 @@ const overrides = { payloadExtension /* gasPrice, gasLimit */ };
 
 // Send the transaction
 const provider = signer.provider;
-const umbra = new SPayment(provider, provider.network.chainId);
-const { tx, stealthKeyPair } = await umbra.send(
+const spayment = new SPayment(provider, provider.network.chainId);
+const { tx, stealthKeyPair } = await spayment.send(
   signer,
   tokenAddress,
   amount,
@@ -119,14 +119,12 @@ await tx.wait(); // transaction mined
 To scan for received funds, follow the steps in the code snippet below:
 
 ```typescript
-import { SPayment } from "@scopelift/umbra-js";
+import { SPayment } from "@scopelift/spayment-js";
 import { signer } from "the/users/connected/wallet"; // assume user previously connected wallet and has signer
 
 // Prompt the user for their signature to get their private keys
-const {
-  spendingKeyPair,
-  viewingKeyPair,
-} = await umbra.value.generatePrivateKeys(signer.value);
+const { spendingKeyPair, viewingKeyPair } =
+  await spayment.value.generatePrivateKeys(signer.value);
 
 // Define a custom range of blocks to scan. Leave this parameter out to scan all blocks
 const startBlock = 12290000;
@@ -135,10 +133,10 @@ const overrides = { startBlock, endBlock };
 
 // Scan for funds
 const provider = signer.provider;
-const umbra = new SPayment(provider, provider.network.chainId);
+const spayment = new SPayment(provider, provider.network.chainId);
 const spendingPublicKey = spendingKeyPair.publicKeyHex;
 const viewingPrivateKey = viewingKeyPair.privateKeyHex;
-const { userAnnouncements } = await umbra.scan(
+const { userAnnouncements } = await spayment.scan(
   spendingPublicKey,
   viewingPrivateKey,
   overrides
@@ -150,17 +148,15 @@ const { userAnnouncements } = await umbra.scan(
 To withdraw funds, follow the steps in the code snippet below:
 
 ```typescript
-import { SPayment } from "@scopelift/umbra-js";
+import { SPayment } from "@scopelift/spayment-js";
 import { signer } from "the/users/connected/wallet"; // assume user previously connected wallet and has signer
 
 // Define the special address the SPayment contract uses to represent ETH
 const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 // Prompt the user for their signature to get their private keys
-const {
-  spendingKeyPair,
-  viewingKeyPair,
-} = await umbra.value.generatePrivateKeys(signer.value);
+const { spendingKeyPair, viewingKeyPair } =
+  await spayment.value.generatePrivateKeys(signer.value);
 
 // Let's assume we're working with the first announcement outputs from the above snippet
 const announcement = userAnnouncements[0];
@@ -173,7 +169,7 @@ const destinationAddress = "0x0000000000000000000000000000000000000000";
 const provider = signer.provider;
 const chainId = provider.network.chainId;
 const spendingPrivateKey = spendingKeyPair.privateKeyHex;
-const umbra = new SPayment(provider, chainId);
+const spayment = new SPayment(provider, chainId);
 
 // Get the stealth private key needed for withdrawal
 const stealthKeyPair = spendingKeyPair.mulPrivateKey(randomNumber);
@@ -182,7 +178,7 @@ const stealthPrivateKey = stealthKeyPair.privateKeyHex;
 // Handle withdraw based on token address
 if (tokenAddress === ETH_ADDRESS) {
   // Handle ETH withdrawal
-  const tx = await umbra.withdraw(
+  const tx = await spayment.withdraw(
     stealthPrivateKey,
     tokenAddress,
     destinationAddress
@@ -196,7 +192,7 @@ if (tokenAddress === ETH_ADDRESS) {
   const { v, r, s } = await SPayment.signWithdraw(
     stealthPrivateKey,
     chainId,
-    umbra.chainConfig.umbraAddress,
+    spayment.chainConfig.spaymentAddress,
     destinationAddress,
     tokenAddress,
     sponsor,
@@ -205,7 +201,7 @@ if (tokenAddress === ETH_ADDRESS) {
 
   // Relay the transaction
   // Assume your app defines a signer called mySigner that sends the relay transaction
-  const tx = await umbra.withdrawOnBehalf(
+  const tx = await spayment.withdrawOnBehalf(
     mySigner,
     stealthKeyPair.address,
     destinationAddress,
@@ -221,8 +217,8 @@ if (tokenAddress === ETH_ADDRESS) {
 
 ## API Reference
 
-For a full API reference, navigate to the `umbra-js` folder in your terminal and run `yarn docs`. Open
-the resulting `umbra-js/docs/index.html` file in your browser to view the documentation.
+For a full API reference, navigate to the `spayment-js` folder in your terminal and run `yarn docs`. Open
+the resulting `spayment-js/docs/index.html` file in your browser to view the documentation.
 
 ## Development
 
@@ -233,7 +229,7 @@ the resulting `umbra-js/docs/index.html` file in your browser to view the docume
 2. Run `yarn` to install packages
 3. Run `yarn test` to run all tests.
 
-
 ## 目录说明
-合约目录：/src/contracts->核心合约编译后的文件目录artifacts\contracts
-合约类型：/typechain->核心合约编译后的文件目录typechain
+
+合约目录：/src/contracts->核心合约编译后的文件目录 artifacts\contracts
+合约类型：/typechain->核心合约编译后的文件目录 typechain

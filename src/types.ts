@@ -5,11 +5,11 @@ import {
   StaticJsonRpcProvider,
   Overrides,
   Web3Provider,
-} from './ethers';
+} from "./ethers";
 
 // ========================================= Ethers types ==========================================
-export { TransactionResponse } from './ethers';
-import { TransactionResponse } from './ethers';
+export { TransactionResponse } from "./ethers";
+import { TransactionResponse } from "./ethers";
 export type ExternalProvider = EthersExternalProvider | JsonRpcFetchFunc;
 export type EthersProvider = Web3Provider | StaticJsonRpcProvider;
 
@@ -38,7 +38,7 @@ export interface TransactionResponseExtended extends TransactionResponse {
 // Settings when instantiating an instance of the SPayment class
 export interface ChainConfig {
   chainId: number; // Chain ID of the deployed contract
-  umbraAddress: string; // address of SPayment contract
+  spaymentAddress: string; // address of SPayment contract
   startBlock: number; // block SPayment contract was deployed at
   subgraphUrl: string | false; // URL of the subgraph used to fetch Announcement events, or false to not use a subgraph
 }

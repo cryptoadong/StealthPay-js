@@ -4,10 +4,7 @@
     "outDir": "build",
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "es2015",
-      "dom"
-    ],
+    "lib": ["es2015", "dom"],
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
@@ -23,14 +20,12 @@
     "declaration": true
   },
 
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "include": [
     "./src/**/*",
     "./src/**/*.json",
     "./types/**/*",
     "typechain/**/*",
-    "./contracts/**/*",
+    "./contracts/**/*"
   ]
 }

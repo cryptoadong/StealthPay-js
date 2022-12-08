@@ -1,14 +1,13 @@
 import "mocha";
-import { expect } from 'chai';
-import { ethers } from 'hardhat';
-import { Wallet } from 'ethers';
-import { RandomNumber } from '../src/classes/RandomNumber';
-import { KeyPair } from '../src/classes/KeyPair';
-import { SPayment } from '../src/classes/SPayment';
-import * as utils from '../src/utils/utils';
-import { expectRejection } from './utils';
-import { testPrivateKeys } from './testPrivateKeys';
-
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { Wallet } from "ethers";
+import { RandomNumber } from "../src/classes/RandomNumber";
+import { KeyPair } from "../src/classes/KeyPair";
+import { SPayment } from "../src/classes/SPayment";
+import * as utils from "../src/utils/utils";
+import { expectRejection } from "./utils";
+import { testPrivateKeys } from "./testPrivateKeys";
 
 const ethersProvider = ethers.provider;
 
@@ -21,13 +20,13 @@ const numberOfRuns = 100;
 const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98709dc9e18b3bddafce903ea49a44b78d57626448c83f8649d3ec4e7c72d8777823f49583b4'; // prettier-ignore
 
 // Address, public key (not used), and private key from first deterministic ganache account
-const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
- const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
-const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
+const address = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
+const publicKey =
+  "0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39";
+const privateKey =
+  "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d";
 
-
-describe('KeyPair class', () => {
-
+describe("KeyPair class", () => {
   let wallet: Wallet;
   // 将会在每个测试用例执行前执行，可以用于准备测试用例所需的前置条件
   //beforeEach(() => {
@@ -35,12 +34,9 @@ describe('KeyPair class', () => {
     wallet = Wallet.createRandom();
   });
 
-  describe('Initialization', () => {
-
-
-
+  describe("Initialization", () => {
     //通过私钥得到keyPair->地址
-    it('initializes an instance with valid private key', () => {
+    it("initializes an instance with valid private key", () => {
       // Check against ganache account
       const keyPair = new KeyPair(privateKey);
       expect(keyPair.address).to.equal(address);
@@ -48,13 +44,11 @@ describe('KeyPair class', () => {
       // Check against random wallet
       const keyPair2 = new KeyPair(wallet.privateKey);
 
-
       expect(keyPair2.address).to.equal(wallet.address);
 
-
-      const publicKey="0x047ed97b2573a44010b4f7280822e04bc74cf1360ace605682ae6ca5f2d6d6fa3d39ef6daffc32c78bd20a187848acbe5bb542dedd65a07ce1167e9d3c394f2124";
+      const publicKey =
+        "0x047ed97b2573a44010b4f7280822e04bc74cf1360ace605682ae6ca5f2d6d6fa3d39ef6daffc32c78bd20a187848acbe5bb542dedd65a07ce1167e9d3c394f2124";
       console.log("已知公钥:", publicKey);
-      
 
       //公钥得到地址
       const keyPair3 = new KeyPair(publicKey);
@@ -65,84 +59,94 @@ describe('KeyPair class', () => {
       const keyPair4 = new KeyPair(privateKey);
       console.log("私钥得到公钥:", keyPair4.publicKeyHex);
       console.log("私钥得到地址:", keyPair4.address);
-
     });
 
     //通过公钥得到keyPair->地址
-    it('initializes an instance with valid public key', () => {
+    it("initializes an instance with valid public key", () => {
       const keyPair = new KeyPair(wallet.publicKey);
 
       //console.log("keyPair.address:"+keyPair.address);
       expect(keyPair.address).to.equal(wallet.address);
     });
 
-
-
     //通过txHash获取keyPair->From地址
-    it('initializes an instance from a regular transaction', async () => {
+    it("initializes an instance from a regular transaction", async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0x16fd6521083f4af7cefad0e11261c6e23a20b3b256cab992389f8b6d120d56f0';
-      const from = '0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438';
+      const txHash =
+        "0x16fd6521083f4af7cefad0e11261c6e23a20b3b256cab992389f8b6d120d56f0";
+      const from = "0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438";
       // Create instance and check result
-      const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
+      const keyPair = await KeyPair.instanceFromTransaction(
+        txHash,
+        ethersProvider
+      );
       console.log("keyPair.publicKeyHex:" + keyPair.publicKeyHex);
       expect(keyPair.address).to.equal(from);
     });
 
     //通过txHash获取keyPair->From地址
-    it('initializes an instance from a contract interaction transaction', async () => {
+    it("initializes an instance from a contract interaction transaction", async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0x7f5c8ad1ccfe2582b1ec98635cca68648ffa898b893ee5c694ef8146596c812d';
-      const from = '0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438';
+      const txHash =
+        "0x7f5c8ad1ccfe2582b1ec98635cca68648ffa898b893ee5c694ef8146596c812d";
+      const from = "0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438";
       // Create instance and check result
-      const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
+      const keyPair = await KeyPair.instanceFromTransaction(
+        txHash,
+        ethersProvider
+      );
       //console.log("contract transaction address:" + keyPair.address);
       expect(keyPair.address).to.equal(from);
     });
 
     //通过txHash获取keyPair->From地址
-    it('initializes an instance from a contract creation transaction', async () => {
+    it("initializes an instance from a contract creation transaction", async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0x7f5c8ad1ccfe2582b1ec98635cca68648ffa898b893ee5c694ef8146596c812d';
-      const from = '0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438';
+      const txHash =
+        "0x7f5c8ad1ccfe2582b1ec98635cca68648ffa898b893ee5c694ef8146596c812d";
+      const from = "0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438";
       // Create instance and check result
-      const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
+      const keyPair = await KeyPair.instanceFromTransaction(
+        txHash,
+        ethersProvider
+      );
       // console.log("contract create address:" + keyPair.address);
       expect(keyPair.address).to.equal(from);
     });
   });
 
-  describe('Functionality', () => {
-
-
+  describe("Functionality", () => {
     //将从一个任意的交易中恢复公钥
-    it('will recover the public key from an arbitrary transaction', async () => {
+    it("will recover the public key from an arbitrary transaction", async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0xb72708c3c414d6757c924f812913a351d0f9a89ce11d3fc22381980f0253e04f';
+      const txHash =
+        "0xb72708c3c414d6757c924f812913a351d0f9a89ce11d3fc22381980f0253e04f";
       const sendersPublicKey =
-        '0x04972a34d8f2ded8515b1b32234fe305273a8a680643bea54e33cb0b862130f6af3088686afefb99b3b6bf9bb3af4ac8f193f7326be203984dceda2791eff47c53';
+        "0x04972a34d8f2ded8515b1b32234fe305273a8a680643bea54e33cb0b862130f6af3088686afefb99b3b6bf9bb3af4ac8f193f7326be203984dceda2791eff47c53";
       // Create instance and check result
-      const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, ethersProvider);
+      const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(
+        txHash,
+        ethersProvider
+      );
       expect(recoveredPublicKey).to.equal(sendersPublicKey);
     });
 
+    it("create privateKeys"),
+      async () => {
+        // Sender computes receiving address from random number and recipient's public key
+        const randomNumber = new RandomNumber();
+        const recipientFromPublic = new KeyPair(wallet.publicKey);
+        const stealthFromPublic =
+          recipientFromPublic.mulPublicKey(randomNumber); //公钥乘以randomNumber
 
-
-    it('create privateKeys'), async () => {
-
-      // Sender computes receiving address from random number and recipient's public key
-      const randomNumber = new RandomNumber();
-      const recipientFromPublic = new KeyPair(wallet.publicKey);
-      const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber); //公钥乘以randomNumber
-
-      // Recipient computes new private key from random number and derives receiving address
-      const recipientFromPrivate = new KeyPair(wallet.privateKey);
-      const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);//私钥乘以randomNumber
-
-    }
+        // Recipient computes new private key from random number and derives receiving address
+        const recipientFromPrivate = new KeyPair(wallet.privateKey);
+        const stealthFromPrivate =
+          recipientFromPrivate.mulPrivateKey(randomNumber); //私钥乘以randomNumber
+      };
 
     //压缩和解压缩公钥
-    it('properly compresses and uncompresses public keys', async () => {
+    it("properly compresses and uncompresses public keys", async () => {
       // Known set of private keys that fail if compressed public key is not padded to 32 bytes (in
       // other words, these private keys generate public keys that start with a zero-byte)
       // prettier-ignore
@@ -187,8 +191,7 @@ describe('KeyPair class', () => {
       }
     });
 
-
-    it('successfully decrypts random number regardless of ephemeral public key prefix', async () => {
+    it("successfully decrypts random number regardless of ephemeral public key prefix", async () => {
       //for (let i = 0; i < numberOfRuns; i += 1) {
       // Recipient account setup. We must use a default hardhat account so hardhat has access to the private
       // key to sign with `provider.send('personal_sign', [params])`, but we instantiate the wallet manually
@@ -205,12 +208,9 @@ describe('KeyPair class', () => {
 
       //if (recipientHardhat.address !== recipient.address) throw new Error('Address mismatch');
 
+      const spayment = new SPayment(ethersProvider, 5); //5表示网络
 
-      const umbra = new SPayment(ethersProvider, 5);//5表示网络
-
-
-      const { viewingKeyPair } = await umbra.generatePrivateKeys(recipient);
-
+      const { viewingKeyPair } = await spayment.generatePrivateKeys(recipient);
 
       // Simulate sender encrypting the random number
       const randomNumber = new RandomNumber();
@@ -218,16 +218,24 @@ describe('KeyPair class', () => {
 
       // Pull out the data that is published to chain and emitted as an event
       const { ciphertext } = encrypted;
-      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(
+        encrypted.ephemeralPublicKey
+      );
 
       // Assume 02 prefix and decrypt
-      const uncompressedPubKey1 = KeyPair.getUncompressedFromX(pubKeyXCoordinate, 2);
+      const uncompressedPubKey1 = KeyPair.getUncompressedFromX(
+        pubKeyXCoordinate,
+        2
+      );
       const payload1 = { ephemeralPublicKey: uncompressedPubKey1, ciphertext };
       const randomNumber1 = viewingKeyPair.decrypt(payload1);
       expect(randomNumber1).to.equal(randomNumber.asHex);
 
       // Assume 03 prefix and decrypt
-      const uncompressedPubKey2 = KeyPair.getUncompressedFromX(pubKeyXCoordinate, 3);
+      const uncompressedPubKey2 = KeyPair.getUncompressedFromX(
+        pubKeyXCoordinate,
+        3
+      );
       const payload2 = { ephemeralPublicKey: uncompressedPubKey2, ciphertext };
       const randomNumber2 = viewingKeyPair.decrypt(payload2);
       expect(randomNumber2).to.equal(randomNumber.asHex);
@@ -236,7 +244,7 @@ describe('KeyPair class', () => {
     });
 
     //用基于密钥的构造方法正确地导出公钥参数
-    it('properly derives public key parameters with both key-based constructor methods', () => {
+    it("properly derives public key parameters with both key-based constructor methods", () => {
       const keyPair1 = new KeyPair(wallet.privateKey);
       const keyPair2 = new KeyPair(wallet.publicKey);
 
@@ -248,11 +256,12 @@ describe('KeyPair class', () => {
     });
 
     //支持对随机数进行加密和解密
-    it('supports encryption and decryption of the random number', async () => {
+    it("supports encryption and decryption of the random number", async () => {
       // Do a bunch of tests with random wallets and numbers
       for (let i = 0; i < numberOfRuns; i += 1) {
         // Every 100th run print status update
-        if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        if ((i + 1) % 100 === 0)
+          console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
 
         // Generate random wallet and encrypt payload
         const randomNumber = new RandomNumber();
@@ -268,31 +277,37 @@ describe('KeyPair class', () => {
     });
 
     //让发件人生成隐蔽的接收地址，让收件人可以访问。
-    it('lets sender generate stealth receiving address that recipient can access', () => {
+    it("lets sender generate stealth receiving address that recipient can access", () => {
       for (let i = 0; i < numberOfRuns; i += 1) {
         // Every 100th run print status update
-        if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        if ((i + 1) % 100 === 0)
+          console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
 
         // Sender computes receiving address from random number and recipient's public key
         const randomNumber = new RandomNumber();
         const recipientFromPublic = new KeyPair(wallet.publicKey);
-        const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber); //公钥乘以randomNumber
+        const stealthFromPublic =
+          recipientFromPublic.mulPublicKey(randomNumber); //公钥乘以randomNumber
 
         // Recipient computes new private key from random number and derives receiving address
         const recipientFromPrivate = new KeyPair(wallet.privateKey);
-        const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);//私钥乘以randomNumber
+        const stealthFromPrivate =
+          recipientFromPrivate.mulPrivateKey(randomNumber); //私钥乘以randomNumber
 
         // Confirm outputs match
         expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address); //地址是相同的
-        expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);//publicKeyHex相同的
+        expect(stealthFromPrivate.publicKeyHex).to.equal(
+          stealthFromPublic.publicKeyHex
+        ); //publicKeyHex相同的
       }
     });
 
     //允许用随机数类或十六进制字符串进行乘法。
-    it('lets multiplication be performed with RandomNumber class or hex string', () => {
+    it("lets multiplication be performed with RandomNumber class or hex string", () => {
       for (let i = 0; i < numberOfRuns; i += 1) {
         // Every 100th run, print status update and use the zero payload extension
-        if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        if ((i + 1) % 100 === 0)
+          console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
 
         // Generate random number and wallet
         const randomNumber = new RandomNumber();
@@ -301,27 +316,43 @@ describe('KeyPair class', () => {
         const randomFromPrivate = new KeyPair(randomWallet.privateKey);
 
         // Compare public key multiplication
-        const stealthFromClassPublic = randomFromPublic.mulPublicKey(randomNumber);
-        const stealthFromStringPublic = randomFromPublic.mulPublicKey(randomNumber.asHex);
-        expect(stealthFromClassPublic.address).to.equal(stealthFromStringPublic.address);
+        const stealthFromClassPublic =
+          randomFromPublic.mulPublicKey(randomNumber);
+        const stealthFromStringPublic = randomFromPublic.mulPublicKey(
+          randomNumber.asHex
+        );
+        expect(stealthFromClassPublic.address).to.equal(
+          stealthFromStringPublic.address
+        );
 
         // Compare private key multiplication
-        const stealthFromClassPrivate = randomFromPrivate.mulPrivateKey(randomNumber);
-        const stealthFromStringPrivate = randomFromPrivate.mulPrivateKey(randomNumber.asHex);
-        expect(stealthFromClassPrivate.address).to.equal(stealthFromStringPrivate.address);
+        const stealthFromClassPrivate =
+          randomFromPrivate.mulPrivateKey(randomNumber);
+        const stealthFromStringPrivate = randomFromPrivate.mulPrivateKey(
+          randomNumber.asHex
+        );
+        expect(stealthFromClassPrivate.address).to.equal(
+          stealthFromStringPrivate.address
+        );
 
-        const stealthFromClassPrivate2 = randomFromPrivate.mulPublicKey(randomNumber);
-        const stealthFromStringPrivate2 = randomFromPrivate.mulPublicKey(randomNumber.asHex);
-        expect(stealthFromClassPrivate2.address).to.equal(stealthFromStringPrivate2.address);
+        const stealthFromClassPrivate2 =
+          randomFromPrivate.mulPublicKey(randomNumber);
+        const stealthFromStringPrivate2 = randomFromPrivate.mulPublicKey(
+          randomNumber.asHex
+        );
+        expect(stealthFromClassPrivate2.address).to.equal(
+          stealthFromStringPrivate2.address
+        );
       }
     });
 
     //适用于任何随机生成的数字和钱包
-    it('works for any randomly generated number and wallet', () => {
+    it("works for any randomly generated number and wallet", () => {
       let numFailures = 0;
       for (let i = 0; i < numberOfRuns; i += 1) {
         // Every 100th run, print status update and use the zero payload extension
-        if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        if ((i + 1) % 100 === 0)
+          console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
 
         // Generate random number and wallet
         const randomNumber = new RandomNumber();
@@ -329,11 +360,13 @@ describe('KeyPair class', () => {
 
         // Sender computes receiving address from random number and recipient's public key
         const recipientFromPublic = new KeyPair(randomWallet.publicKey);
-        const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+        const stealthFromPublic =
+          recipientFromPublic.mulPublicKey(randomNumber);
 
         // Recipient computes new private key from random number and derives receiving address
         const recipientFromPrivate = new KeyPair(randomWallet.privateKey);
-        const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+        const stealthFromPrivate =
+          recipientFromPrivate.mulPrivateKey(randomNumber);
 
         // Confirm outputs match
         if (
@@ -342,155 +375,212 @@ describe('KeyPair class', () => {
         ) {
           numFailures += 1;
           console.log();
-          console.log(`FAILURE #${numFailures} ========================================`);
-          console.log('Inputs');
-          console.log('  Wallet Private Key:  ', wallet.privateKey);
-          console.log('  Wallet Public Key:   ', wallet.publicKey);
-          console.log('  Wallet Address:      ', wallet.address);
-          console.log('  Random Number:       ', randomNumber.asHex);
-          console.log('Outputs');
-          console.log('  Stealth from Public,  Address:     ', stealthFromPublic.address);
-          console.log('  Stealth from Private, Address:     ', stealthFromPrivate.address);
-          console.log('  Stealth from Public,  Public Key:  ', stealthFromPublic.publicKeyHex);
-          console.log('  Stealth from Private, Public Key:  ', stealthFromPrivate.publicKeyHex);
+          console.log(
+            `FAILURE #${numFailures} ========================================`
+          );
+          console.log("Inputs");
+          console.log("  Wallet Private Key:  ", wallet.privateKey);
+          console.log("  Wallet Public Key:   ", wallet.publicKey);
+          console.log("  Wallet Address:      ", wallet.address);
+          console.log("  Random Number:       ", randomNumber.asHex);
+          console.log("Outputs");
+          console.log(
+            "  Stealth from Public,  Address:     ",
+            stealthFromPublic.address
+          );
+          console.log(
+            "  Stealth from Private, Address:     ",
+            stealthFromPrivate.address
+          );
+          console.log(
+            "  Stealth from Public,  Public Key:  ",
+            stealthFromPublic.publicKeyHex
+          );
+          console.log(
+            "  Stealth from Private, Public Key:  ",
+            stealthFromPrivate.publicKeyHex
+          );
         }
       }
       expect(numFailures).to.equal(0);
     });
   });
 
-
   //Input validation
-  describe('Input validation', () => {
+  describe("Input validation", () => {
     // ts-expect-error statements needed throughout this section to bypass TypeScript checks that would stop this file
     // from being compiled/ran
 
     //如果使用公钥创建钱包时privateKeyHex和privateKeyHexSlim 是null
-    it('returns null for private key parameters when created with a public key', () => {
+    it("returns null for private key parameters when created with a public key", () => {
       const keyPair = new KeyPair(wallet.publicKey);
       expect(keyPair.privateKeyHex).to.equal(null);
       expect(keyPair.privateKeyHexSlim).to.equal(null);
     });
 
     //验证PrivateKey和PublicKey的格式
-    it('throws when initializing with an invalid key', () => {
-      const errorMsg1 = 'Key must be a string in hex format with 0x prefix';//必须0x开头
-      const errorMsg2 = 'Key must be a 66 character hex private key or a 132 character hex public key';//必须是66个字符Hex或者132字符hex
-      const errorMsg3 = 'Cannot initialize KeyPair with the provided key';//不能使用完为0的私钥
-      const zeroPrivateKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
+    it("throws when initializing with an invalid key", () => {
+      const errorMsg1 = "Key must be a string in hex format with 0x prefix"; //必须0x开头
+      const errorMsg2 =
+        "Key must be a 66 character hex private key or a 132 character hex public key"; //必须是66个字符Hex或者132字符hex
+      const errorMsg3 = "Cannot initialize KeyPair with the provided key"; //不能使用完为0的私钥
+      const zeroPrivateKey =
+        "0x0000000000000000000000000000000000000000000000000000000000000000";
       const zeroPublicKey =
-        '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';//不能使用完为0的公钥
+        "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //不能使用完为0的公钥
 
       // @ts-expect-error
       expect(() => new KeyPair(1)).to.throw(errorMsg1);
       expect(() => new KeyPair(privateKey.slice(2))).to.throw(errorMsg1);
       expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(errorMsg1);
-      expect(() => new KeyPair('0x1234')).to.throw(errorMsg2);
+      expect(() => new KeyPair("0x1234")).to.throw(errorMsg2);
       expect(() => new KeyPair(zeroPrivateKey)).to.throw(errorMsg3);
       expect(() => new KeyPair(zeroPublicKey)).to.throw(errorMsg3);
     });
 
     //当用不在曲线上的公钥初始化时，会抛出一个问题。解理：公钥必须是曲线算法生成的公钥
-    it('throws when initializing with a public key not on the curve', () => {
-      expect(() => new KeyPair(badPublicKey)).to.throw('Point is not on elliptic curve');
+    it("throws when initializing with a public key not on the curve", () => {
+      expect(() => new KeyPair(badPublicKey)).to.throw(
+        "Point is not on elliptic curve"
+      );
     });
 
     //加密时必须使用RandomNumber生成的随机数
-    it('throws when trying to encrypt with a bad input', async () => {
+    it("throws when trying to encrypt with a bad input", async () => {
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
-      const errorMsg = 'Must provide instance of RandomNumber';
+      const errorMsg = "Must provide instance of RandomNumber";
 
       //必须使用RandomNumber生成的随机数
       // @ts-expect-error
-      expect(() => keyPairFromPublic.encrypt('1')).to.throw(errorMsg);
+      expect(() => keyPairFromPublic.encrypt("1")).to.throw(errorMsg);
       // @ts-expect-error
       expect(() => keyPairFromPublic.encrypt(1)).to.throw(errorMsg);
     });
 
     //解密时必须RandomNumber的随机数
-    it('throws when trying to decrypt with a bad input', async () => {
+    it("throws when trying to decrypt with a bad input", async () => {
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
-      const errorMsg = 'Input must be of type EncryptedPayload to decrypt';
+      const errorMsg = "Input must be of type EncryptedPayload to decrypt";
       // @ts-expect-error
-      expect(() => keyPairFromPrivate.decrypt({ ephemeralPublicKey: '1' })).to.throw(errorMsg);
+      expect(() =>
+        keyPairFromPrivate.decrypt({ ephemeralPublicKey: "1" })
+      ).to.throw(errorMsg);
       // @ts-expect-error
-      expect(() => keyPairFromPrivate.decrypt({ ciphertext: '1' })).to.throw(errorMsg);
+      expect(() => keyPairFromPrivate.decrypt({ ciphertext: "1" })).to.throw(
+        errorMsg
+      );
       // @ts-expect-error
-      expect(() => keyPairFromPrivate.decrypt('1')).to.throw(errorMsg);
+      expect(() => keyPairFromPrivate.decrypt("1")).to.throw(errorMsg);
       // @ts-expect-error
       expect(() => keyPairFromPrivate.decrypt(1)).to.throw(errorMsg);
     });
 
-
     //当试图用只有公钥的KeyPair解密时，会抛出一个问题。
-    it('throws when trying to decrypt with a KeyPair that only has a public key', () => {
+    it("throws when trying to decrypt with a KeyPair that only has a public key", () => {
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
 
       const dummyWallet = Wallet.createRandom();
 
-      const dummyEncryptedData = { ephemeralPublicKey: dummyWallet.publicKey, ciphertext: dummyWallet.privateKey };
+      const dummyEncryptedData = {
+        ephemeralPublicKey: dummyWallet.publicKey,
+        ciphertext: dummyWallet.privateKey,
+      };
 
-      const errorMsg = 'KeyPair has no associated private key to decrypt with';//密钥对没有相关的私钥可以解密
+      const errorMsg = "KeyPair has no associated private key to decrypt with"; //密钥对没有相关的私钥可以解密
 
-      expect(() => keyPairFromPublic.decrypt(dummyEncryptedData)).to.throw(errorMsg);
+      expect(() => keyPairFromPublic.decrypt(dummyEncryptedData)).to.throw(
+        errorMsg
+      );
     });
 
     //当试图用不在曲线上的公钥解密时，会抛出一个问题。不太明白什么意思
-    it('throws when trying to decrypt with a public key not on the curve', () => {
+    it("throws when trying to decrypt with a public key not on the curve", () => {
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const dummyWallet = Wallet.createRandom();
-      const dummyEncryptedData = { ephemeralPublicKey: badPublicKey, ciphertext: dummyWallet.privateKey };
-      const dummyEncryptedData2 = { ephemeralPublicKey: badPublicKey.slice(2), ciphertext: dummyWallet.privateKey };
+      const dummyEncryptedData = {
+        ephemeralPublicKey: badPublicKey,
+        ciphertext: dummyWallet.privateKey,
+      };
+      const dummyEncryptedData2 = {
+        ephemeralPublicKey: badPublicKey.slice(2),
+        ciphertext: dummyWallet.privateKey,
+      };
 
-      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData)).to.throw('Point is not on elliptic curve');
-      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData2)).to.throw('Point is not on elliptic curve');
+      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData)).to.throw(
+        "Point is not on elliptic curve"
+      );
+      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData2)).to.throw(
+        "Point is not on elliptic curve"
+      );
     });
 
     //验证乘以的数类似防坑
-    it('throws when mulPublicKey is provided a bad input', async () => {
+    it("throws when mulPublicKey is provided a bad input", async () => {
       const wallet = Wallet.createRandom();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       // @ts-expect-error
-      expect(() => keyPairFromPublic.mulPublicKey(1)).to.throw('Input must be instance of RandomNumber or string');
-      expect(() => keyPairFromPublic.mulPublicKey('1234')).to.throw('Strings must be in hex form with 0x prefix');
+      expect(() => keyPairFromPublic.mulPublicKey(1)).to.throw(
+        "Input must be instance of RandomNumber or string"
+      );
+      expect(() => keyPairFromPublic.mulPublicKey("1234")).to.throw(
+        "Strings must be in hex form with 0x prefix"
+      );
     });
 
     //验证乘以的数类似防坑
-    it('throws when mulPrivateKey is provided a bad input', async () => {
+    it("throws when mulPrivateKey is provided a bad input", async () => {
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       // @ts-expect-error
-      expect(() => keyPairFromPrivate.mulPrivateKey(1)).to.throw('Input must be instance of RandomNumber or string');
-      expect(() => keyPairFromPrivate.mulPrivateKey('1234')).to.throw('Strings must be in hex form with 0x prefix');
-      expect(() => keyPairFromPublic.mulPrivateKey('0x1')).to.throw('KeyPair has no associated private key');
+      expect(() => keyPairFromPrivate.mulPrivateKey(1)).to.throw(
+        "Input must be instance of RandomNumber or string"
+      );
+      expect(() => keyPairFromPrivate.mulPrivateKey("1234")).to.throw(
+        "Strings must be in hex form with 0x prefix"
+      );
+      expect(() => keyPairFromPublic.mulPrivateKey("0x1")).to.throw(
+        "KeyPair has no associated private key"
+      );
     });
 
     //验证无法交易txhash
-    it('throws when instanceFromTransaction is provided an invalid transaction hash', async () => {
-      const errorMsg = 'Invalid transaction hash provided';
+    it("throws when instanceFromTransaction is provided an invalid transaction hash", async () => {
+      const errorMsg = "Invalid transaction hash provided";
       // @ts-expect-error
-      expectRejection(KeyPair.instanceFromTransaction(1, ethersProvider), errorMsg);
-      expectRejection(KeyPair.instanceFromTransaction('0x1', ethersProvider), errorMsg);
+      expectRejection(
+        KeyPair.instanceFromTransaction(1, ethersProvider),
+        errorMsg
+      );
+      expectRejection(
+        KeyPair.instanceFromTransaction("0x1", ethersProvider),
+        errorMsg
+      );
     });
 
     //验证错误公钥压缩
-    it('throws when compressPublicKey is provided bad inputs', async () => {
-      const errorMsg = 'Must provide uncompressed public key as hex string';
+    it("throws when compressPublicKey is provided bad inputs", async () => {
+      const errorMsg = "Must provide uncompressed public key as hex string";
       // @ts-expect-error
       expect(() => KeyPair.compressPublicKey(1)).to.throw(errorMsg);
-      expect(() => KeyPair.compressPublicKey('1')).to.throw(errorMsg);
-      expect(() => KeyPair.compressPublicKey('0x1')).to.throw(errorMsg);
+      expect(() => KeyPair.compressPublicKey("1")).to.throw(errorMsg);
+      expect(() => KeyPair.compressPublicKey("0x1")).to.throw(errorMsg);
     });
 
     //验证非曲线算法公钥
-    it('throws when compressPublicKey is provided a public key not on the curve', () => {
-      expect(() => KeyPair.compressPublicKey(badPublicKey)).to.throw('Point is not on elliptic curve');
-      expect(() => KeyPair.compressPublicKey(badPublicKey.slice(2))).to.throw('Point is not on elliptic curve');//去掉前2位
+    it("throws when compressPublicKey is provided a public key not on the curve", () => {
+      expect(() => KeyPair.compressPublicKey(badPublicKey)).to.throw(
+        "Point is not on elliptic curve"
+      );
+      expect(() => KeyPair.compressPublicKey(badPublicKey.slice(2))).to.throw(
+        "Point is not on elliptic curve"
+      ); //去掉前2位
     });
     //验证解压缩
-    it('throws when getUncompressedFromX is provided bad inputs', async () => {
+    it("throws when getUncompressedFromX is provided bad inputs", async () => {
       // @ts-expect-error
-      expect(() => KeyPair.getUncompressedFromX(1)).to.throw('Compressed public key must be a BigNumber or string');
+      expect(() => KeyPair.getUncompressedFromX(1)).to.throw(
+        "Compressed public key must be a BigNumber or string"
+      );
     });
   });
 });

@@ -1,11 +1,11 @@
-import { config as dotenvConfig } from 'dotenv';
-import { resolve } from 'path';
-dotenvConfig({ path: resolve(__dirname, './.env') });
+import { config as dotenvConfig } from "dotenv";
+import { resolve } from "path";
+dotenvConfig({ path: resolve(__dirname, "./.env") });
 
-import { HardhatUserConfig } from 'hardhat/config';
-import { NetworkUserConfig } from 'hardhat/types';
+import { HardhatUserConfig } from "hardhat/config";
+import { NetworkUserConfig } from "hardhat/types";
 
-import '@nomiclabs/hardhat-ethers';
+import "@nomiclabs/hardhat-ethers";
 const chainIds = {
   ganache: 1337,
   goerli: 5,
@@ -17,12 +17,15 @@ const chainIds = {
 };
 
 // Ensure that we have all the environment variables we need.
-const mnemonic = 'conduct remind blast layer market sunset mobile alert brush illness pink flame';
+const mnemonic =
+  "conduct remind blast layer market sunset mobile alert brush illness pink flame";
 
 const infuraApiKey = process.env.INFURA_ID;
-if (!infuraApiKey) throw new Error('Please set your INFURA_ID in a .env file');
+if (!infuraApiKey) throw new Error("Please set your INFURA_ID in a .env file");
 
-function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
+function createTestnetConfig(
+  network: keyof typeof chainIds
+): NetworkUserConfig {
   const url = `https://${network}.infura.io/v3/${infuraApiKey as string}`;
   return {
     accounts: {
@@ -37,7 +40,7 @@ function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig 
 }
 
 const config: HardhatUserConfig = {
-  defaultNetwork: 'goerli',
+  defaultNetwork: "goerli",
   networks: {
     hardhat: {
       forking: {
@@ -51,19 +54,19 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/1'/0",
       },
     },
-    goerli: createTestnetConfig('goerli'),
-    kovan: createTestnetConfig('kovan'),
-    rinkeby: createTestnetConfig('rinkeby'),
-    ropsten: createTestnetConfig('ropsten'),
+    goerli: createTestnetConfig("goerli"),
+    kovan: createTestnetConfig("kovan"),
+    rinkeby: createTestnetConfig("rinkeby"),
+    ropsten: createTestnetConfig("ropsten"),
   },
   paths: {
-    cache: './cache',
-    tests: './test',
+    cache: "./cache",
+    tests: "./test",
   },
   solidity: {
     compilers: [
       {
-        version: '0.7.6',
+        version: "0.7.6",
         settings: {
           // https://hardhat.org/hardhat-network/#solidity-optimizer-support
           optimizer: {
@@ -73,7 +76,7 @@ const config: HardhatUserConfig = {
         },
       },
       {
-        version: '0.6.12',
+        version: "0.6.12",
         settings: {
           // https://hardhat.org/hardhat-network/#solidity-optimizer-support
           optimizer: {

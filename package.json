@@ -10,7 +10,7 @@
     "build"
   ],
   "scripts": {
-    "test": "yarn build",
+    "test": "tsc --build",
     "build-pack": "tsc --build && yarn lerna run --ignore \"@spayment/spayment-js\" build",
     "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:spayment-js\\//gI' coverage/lcov.info",
     "lint": "eslint --ext .js,.ts ",
@@ -18,9 +18,7 @@
     "watch": "tsc --watch",
     "build": "tsc --build",
     "clean": "rimraf build coverage .nyc_output cache",
-    "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
-    "precommit": "lint-staged",
     "docs": "typedoc src/"
   },
   "license": "ISC",
@@ -44,15 +42,14 @@
     "eslint-config-prettier": "^8.2.0",
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
-    "husky": "^4.3.0",
-    "lerna": "^3.22.1",
     "lint-staged": "^10.5.1",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "prettier": "^2.1.2",
     "rimraf": "^3.0.2",
+    "typescript": "^4.1.0",
     "ts-node": "^9.0.0",
-    "typescript": "^4.1.0"
+    "typedoc": "^0.20.35"
   },
   "resolutions": {
     "y18n": "^4.0.1"
@@ -63,11 +60,6 @@
     "payments",
     "web3"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lerna run precommit"
-    }
-  },
   "volta": {
     "node": "16.15.0",
     "yarn": "1.22.18"
@@ -79,6 +71,8 @@
   "bugs": {
     "url": "https://github.com/cryptoadong/spayment-js/issues"
   },
-  "homepage": "https://github.com/cryptoadong/spayment-js#readme"
-  
+  "homepage": "https://github.com/cryptoadong/spayment-js#readme",
+  "directories": {
+    "test": "test"
+  }
 }
