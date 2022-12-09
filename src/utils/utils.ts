@@ -18,13 +18,13 @@ import {
   splitSignature,
   StaticJsonRpcProvider,
   UnsignedTransaction,
-} from "../ethers";
-import { Point, Signature, recoverPublicKey } from "noble-secp256k1";
-import { ens, cns } from "..";
-import { default as Resolution } from "@unstoppabledomains/resolution";
-import { StealthKeyRegistry } from "../classes/StealthKeyRegistry";
-import { TxHistoryProvider } from "../classes/TxHistoryProvider";
-import { EthersProvider, TransactionResponseExtended } from "../types";
+} from '../ethers';
+import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
+import { ens, cns } from '..';
+import { default as Resolution } from '@unstoppabledomains/resolution';
+import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
+import { TxHistoryProvider } from '../classes/TxHistoryProvider';
+import { EthersProvider, TransactionResponseExtended } from '../types';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -38,8 +38,8 @@ export const lengths = {
 // made somewhere and the funds will not be accessible. Ensure any addresses added to this list are checksum addresses
 export const blockedStealthAddresses = [
   AddressZero,
-  "0xdcc703c0E500B653Ca82273B7BFAd8045D85a470", // generated from hashing an empty public key, e.g. keccak256('0x')
-  "0x59274E3aE531285c24e3cf57C11771ecBf72d9bf", // generated from hashing the zero public key, e.g. keccak256('0x000...000')
+  '0xdcc703c0E500B653Ca82273B7BFAd8045D85a470', // generated from hashing an empty public key, e.g. keccak256('0x')
+  '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
 ];
 
 /**
@@ -49,19 +49,14 @@ export const blockedStealthAddresses = [
  * @param txHash Transaction hash to recover public key from
  * @param provider ethers provider instance
  */
-export async function recoverPublicKeyFromTransaction(
-  txHash: string,
-  provider: EthersProvider
-) {
+export async function recoverPublicKeyFromTransaction(txHash: string, provider: EthersProvider) {
   // Get transaction data
-  if (typeof txHash !== "string" || txHash.length !== lengths.txHash) {
-    throw new Error("Invalid transaction hash provided");
+  if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {
+    throw new Error('Invalid transaction hash provided');
   }
   const tx = await getTransactionByHash(txHash, provider);
   if (!tx) {
-    throw new Error(
-      "Transaction not found. Are the provider and transaction hash on the same network?"
-    );
+    throw new Error('Transaction not found. Are the provider and transaction hash on the same network?');
   }
 
   // Reconstruct transaction payload that was originally signed. Relevant EIPs:
@@ -125,17 +120,13 @@ export async function recoverPublicKeyFromTransaction(
     s: tx.s,
     v: tx.v,
   }).recoveryParam;
-  const publicKeyNo0xPrefix = recoverPublicKey(
-    msgHash.slice(2),
-    signature.toHex(),
-    recoveryParam
-  ); // without 0x prefix
-  if (!publicKeyNo0xPrefix) throw new Error("Could not recover public key");
+  const publicKeyNo0xPrefix = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
+  if (!publicKeyNo0xPrefix) throw new Error('Could not recover public key');
 
   // Verify that recovered public key derives to the transaction from address
   const publicKey = `0x${publicKeyNo0xPrefix}`;
   if (computeAddress(publicKey) !== tx.from) {
-    throw new Error("Public key not recovered properly");
+    throw new Error('Public key not recovered properly');
   }
   return publicKey;
 }
@@ -146,10 +137,7 @@ export async function recoverPublicKeyFromTransaction(
  * @param address Address to lookup
  * @param provider ethers provider instance
  */
-export async function getSentTransaction(
-  address: string,
-  ethersProvider: EthersProvider
-) {
+export async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
   address = getAddress(address); // address input validation
   const { chainId } = await ethersProvider.getNetwork();
   const txHistoryProvider = new TxHistoryProvider(chainId);
@@ -245,10 +233,7 @@ export async function lookupRecipient(
   // Otherwise, get public key based on the most recent transaction sent by that address
   const txHash = await getSentTransaction(address, provider);
 
-  if (!txHash)
-    throw new Error(
-      "Could not get public key because the provided account has not sent any transactions"
-    );
+  if (!txHash) throw new Error('Could not get public key because the provided account has not sent any transactions');
   const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
   assertValidPoint(publicKey);
 
@@ -261,11 +246,7 @@ export async function lookupRecipient(
  * @param abi Contract ABI
  * @param provider ethers provider instance
  */
-export function createContract(
-  address: string,
-  abi: ContractInterface,
-  provider: EthersProvider
-) {
+export function createContract(address: string, abi: ContractInterface, provider: EthersProvider) {
   // Use signer if available, otherwise use provider
   const signer = provider.getSigner();
   return new Contract(address, abi, signer || provider);
@@ -276,11 +257,8 @@ export function createContract(
  * @param point Uncompressed public key as hex string
  */
 export function assertValidPoint(point: string) {
-  if (
-    typeof point !== "string" ||
-    (point.length !== 130 && point.length !== 132)
-  ) {
-    throw new Error("Must provide uncompressed public key as hex string");
+  if (typeof point !== 'string' || (point.length !== 130 && point.length !== 132)) {
+    throw new Error('Must provide uncompressed public key as hex string');
   }
   if (point.length === 130) Point.fromHex(point);
   if (point.length === 132) Point.fromHex(point.slice(2)); // trim 0x prefix
@@ -291,10 +269,7 @@ export function assertValidPoint(point: string) {
  * @param name Name or domain to test
  * @param provider ethers provider instance
  */
-export async function getPublicKeysLegacy(
-  name: string,
-  provider: EthersProvider
-) {
+export async function getPublicKeysLegacy(name: string, provider: EthersProvider) {
   if (!isDomain(name)) throw new Error(`Name ${name} is not a valid domain`);
   try {
     // First try ENS (throws on failure)
@@ -339,9 +314,7 @@ async function resolveEns(name: string, provider: EthersProvider) {
     // against L1, as explained here: https://twitter.com/makoto_inoue/status/1453737962110275598
     const { chainId } = await provider.getNetwork();
     if (chainId !== 1)
-      provider = new StaticJsonRpcProvider(
-        `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`
-      );
+      provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
     const address = await provider.resolveName(name);
     return address || null;
   } catch (e) {
@@ -357,7 +330,7 @@ async function resolveEns(name: string, provider: EthersProvider) {
 async function resolveCns(name: string) {
   try {
     const resolution = getResolutionInstance();
-    const address = await resolution.addr(name, "ETH");
+    const address = await resolution.addr(name, 'ETH');
     return getAddress(address) || null;
   } catch (e) {
     return null;
@@ -383,14 +356,13 @@ export async function getEthSweepGasInfo(
   const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
-  const [toAddressCode, network, fromBalance, providerGasPrice] =
-    await Promise.all([
-      provider.getCode(to),
-      provider.getNetwork(),
-      provider.getBalance(from),
-      provider.getGasPrice(),
-    ]);
-  const isEoa = toAddressCode === "0x";
+  const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
+    provider.getCode(to),
+    provider.getNetwork(),
+    provider.getBalance(from),
+    provider.getGasPrice(),
+  ]);
+  const isEoa = toAddressCode === '0x';
   const { chainId } = network;
 
   // If a gas limit was provided, use it. Otherwise, if we are sending to an EOA and this is a network where ETH
@@ -398,7 +370,7 @@ export async function getEthSweepGasInfo(
   const gasLimit = overrides.gasLimit
     ? BigNumber.from(await overrides.gasLimit)
     : isEoa && gasLimitOf21k.includes(chainId)
-    ? BigNumber.from("21000")
+    ? BigNumber.from('21000')
     : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
 
   // Estimate the gas price, defaulting to the given one unless on a network where we want to use provider gas price
@@ -412,19 +384,13 @@ export async function getEthSweepGasInfo(
   let txCost = gasPrice.mul(gasLimit);
   if (chainId === 10) {
     const nonce = await provider.getTransactionCount(from);
-    const gasOracleAbi = [
-      "function getL1Fee(bytes memory _data) public view returns (uint256)",
-    ];
-    const gasPriceOracle = new Contract(
-      "0x420000000000000000000000000000000000000F",
-      gasOracleAbi,
-      provider
-    );
+    const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
+    const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
     const l1FeeInWei = await gasPriceOracle.getL1Fee(
       serializeTransaction({
         to,
         value: fromBalance,
-        data: "0x",
+        data: '0x',
         gasLimit,
         gasPrice,
         nonce,
@@ -449,33 +415,28 @@ export async function getEthSweepGasInfo(
  * like getTransaction does
  * @dev Based on https://github.com/ethers-io/ethers.js/blob/ef1b28e958b50cea7ff44da43b3c5ff054e4b483/packages/providers/src.ts/base-provider.ts#L1832
  */
-async function getTransactionByHash(
-  txHash: string,
-  provider: EthersProvider
-): Promise<TransactionResponseExtended> {
+async function getTransactionByHash(txHash: string, provider: EthersProvider): Promise<TransactionResponseExtended> {
   // Initial response contains all fields, including non-standard fields.
   const params = { transactionHash: provider.formatter.hash(txHash, true) };
-  const fullTx = await provider.perform("getTransaction", params);
+  const fullTx = await provider.perform('getTransaction', params);
   if (!fullTx) {
     throw new Error('Transaction hash not found. Are the provider and transaction hash on the same network?'); // prettier-ignore
   }
   // We use the formatter to parse values into the types ethers normally returns, but this strips non-standard fields.
-  const partialTx = <TransactionResponseExtended>(
-    provider.formatter.transactionResponse(fullTx)
-  );
+  const partialTx = <TransactionResponseExtended>provider.formatter.transactionResponse(fullTx);
   // Now we add back the missing fields, with custom typing by field.
-  const bigNumberFields = new Set(["gas"]); // ethers renames this to gasLimit, but for completeness we add `gas` back.
+  const bigNumberFields = new Set(['gas']); // ethers renames this to gasLimit, but for completeness we add `gas` back.
   const numberFields = new Set([
     // Arbitrum.
-    "arbSubType",
-    "arbType",
-    "indexInParent",
-    "l1BlockNumber",
+    'arbSubType',
+    'arbType',
+    'indexInParent',
+    'l1BlockNumber',
     // Optimism.
-    "index",
-    "l1BlockNumber",
-    "l1Timestamp",
-    "queueIndex",
+    'index',
+    'l1BlockNumber',
+    'l1Timestamp',
+    'queueIndex',
   ]);
   const tx = <TransactionResponseExtended>{ ...partialTx };
   const existingFields = new Set(Object.keys(tx));
@@ -483,7 +444,7 @@ async function getTransactionByHash(
     // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
     if (existingFields.has(key)) return;
     // Otherwise, add the field and format it
-    if (bigNumberFields.has("key")) {
+    if (bigNumberFields.has('key')) {
       tx.gas = fullTx[key] ? BigNumber.from(fullTx[key]) : null;
     } else if (numberFields.has(key)) {
       tx[key] = fullTx[key] ? BigNumber.from(fullTx[key]).toNumber() : null;
@@ -504,102 +465,94 @@ export async function assertSupportedAddress(recipientId: string) {
   }
 
   // If needed, resolve recipient ID to an address (e.g. if it's an ENS name).
-  const provider = new StaticJsonRpcProvider(
-    `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`
-  );
+  const provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
   const address = await toAddress(recipientId, provider);
-  const errMsg = "Address is invalid or unavailable";
+  const errMsg = 'Address is invalid or unavailable';
 
   // Now check the address against the hardcoded list.
   const bannedAddresses = new Set([
-    "0x19Aa5Fe80D33a56D56c78e82eA5E50E5d80b4Dff",
-    "0x1da5821544e25c636c1417Ba96Ade4Cf6D2f9B5A",
-    "0x2f389cE8bD8ff92De3402FFCe4691d17fC4f6535",
-    "0x308eD4B7b49797e1A98D3818bFF6fe5385410370",
-    "0x3CBdeD43EFdAf0FC77b9C55F6fC9988fCC9b757d",
-    "0x48549A34AE37b12F6a30566245176994e17C6b4A",
-    "0x5512d943eD1f7c8a43F3435C85F7aB68b30121b0",
-    "0x67d40EE1A85bf4a4Bb7Ffae16De985e8427B6b45",
-    "0x6aCDFBA02D390b97Ac2b2d42A63E85293BCc160e",
-    "0x6F1cA141A28907F78Ebaa64fb83A9088b02A8352",
-    "0x72a5843cc08275C8171E582972Aa4fDa8C397B2A",
-    "0x7Db418b5D567A4e0E8c59Ad71BE1FcE48f3E6107",
-    "0x7F19720A857F834887FC9A7bC0a0fBe7Fc7f8102",
-    "0x7F367cC41522cE07553e823bf3be79A889DEbe1B",
-    "0x8576aCC5C05D6Ce88f4e49bf65BdF0C62F91353C",
-    "0x901bb9583b24D97e995513C6778dc6888AB6870e",
-    "0x9F4cda013E354b8fC285BF4b9A60460cEe7f7Ea9",
-    "0xA7e5d5A720f06526557c513402f2e6B5fA20b008",
-    "0xC455f7fd3e0e12afd51fba5c106909934D8A0e4a",
-    "0xd882cFc20F52f2599D84b8e8D58C7FB62cfE344b",
-    "0xe7aa314c77F4233C18C6CC84384A9247c0cf367B",
-    "0xfEC8A60023265364D066a1212fDE3930F6Ae8da7",
-    "0x7FF9cFad3877F21d41Da833E2F775dB0569eE3D9",
-    "0x098B716B8Aaf21512996dC57EB0615e2383E2f96",
-    "0xa0e1c89Ef1a489c9C7dE96311eD5Ce5D32c20E4B",
-    "0x3Cffd56B47B7b41c56258D9C7731ABaDc360E073",
-    "0x53b6936513e738f44FB50d2b9476730C0Ab3Bfc1",
-    "0x35fB6f6DB4fb05e6A4cE86f2C93691425626d4b1",
-    "0xF7B31119c2682c88d88D455dBb9d5932c65Cf1bE",
-    "0x3e37627dEAA754090fBFbb8bd226c1CE66D255e9",
-    "0x08723392Ed15743cc38513C4925f5e6be5c17243",
-    "0x8589427373D6D84E98730D7795D8f6f8731FDA16",
-    "0x722122dF12D4e14e13Ac3b6895a86e84145b6967",
-    "0xDD4c48C0B24039969fC16D1cdF626eaB821d3384",
-    "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b",
-    "0xd96f2B1c14Db8458374d9Aca76E26c3D18364307",
-    "0x4736dCf1b7A3d580672CcE6E7c65cd5cc9cFBa9D",
-    "0xD4B88Df4D29F5CedD6857912842cff3b20C8Cfa3",
-    "0x910Cbd523D972eb0a6f4cAe4618aD62622b39DbF",
-    "0xA160cdAB225685dA1d56aa342Ad8841c3b53f291",
-    "0xFD8610d20aA15b7B2E3Be39B396a1bC3516c7144",
-    "0xF60dD140cFf0706bAE9Cd734Ac3ae76AD9eBC32A",
-    "0x22aaA7720ddd5388A3c0A3333430953C68f1849b",
-    "0xBA214C1c1928a32Bffe790263E38B4Af9bFCD659",
-    "0xb1C8094B234DcE6e03f10a5b673c1d8C69739A00",
-    "0x527653eA119F3E6a1F5BD18fbF4714081D7B31ce",
-    "0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2",
-    "0xD691F27f38B395864Ea86CfC7253969B409c362d",
-    "0xaEaaC358560e11f52454D997AAFF2c5731B6f8a6",
-    "0x1356c899D8C9467C7f71C195612F8A395aBf2f0a",
-    "0xA60C772958a3eD56c1F15dD055bA37AC8e523a0D",
-    "0x169AD27A470D064DEDE56a2D3ff727986b15D52B",
-    "0x0836222F2B2B24A3F36f98668Ed8F0B38D1a872f",
-    "0xF67721A2D8F736E75a49FdD7FAd2e31D8676542a",
-    "0x9AD122c22B14202B4490eDAf288FDb3C7cb3ff5E",
-    "0x905b63Fff465B9fFBF41DeA908CEb12478ec7601",
-    "0x07687e702b410Fa43f4cB4Af7FA097918ffD2730",
-    "0x94A1B5CdB22c43faab4AbEb5c74999895464Ddaf",
-    "0xb541fc07bC7619fD4062A54d96268525cBC6FfEF",
-    "0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc",
-    "0x47CE0C6eD5B0Ce3d3A51fdb1C52DC66a7c3c2936",
-    "0x23773E65ed146A459791799d01336DB287f25334",
-    "0xD21be7248e0197Ee08E0c20D4a96DEBdaC3D20Af",
-    "0x610B717796ad172B316836AC95a2ffad065CeaB4",
-    "0x178169B423a011fff22B9e3F3abeA13414dDD0F1",
-    "0xbB93e510BbCD0B7beb5A853875f9eC60275CF498",
-    "0x2717c5e28cf931547B621a5dddb772Ab6A35B701",
-    "0x03893a7c7463AE47D46bc7f091665f1893656003",
-    "0xCa0840578f57fE71599D29375e16783424023357",
-    "0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2",
-    "0x8589427373D6D84E98730D7795D8f6f8731FDA16",
-    "0x722122dF12D4e14e13Ac3b6895a86e84145b6967",
-    "0xDD4c48C0B24039969fC16D1cdF626eaB821d3384",
-    "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b",
-    "0xd96f2B1c14Db8458374d9Aca76E26c3D18364307",
-    "0x4736dCf1b7A3d580672CcE6E7c65cd5cc9cFBa9D",
+    '0x19Aa5Fe80D33a56D56c78e82eA5E50E5d80b4Dff',
+    '0x1da5821544e25c636c1417Ba96Ade4Cf6D2f9B5A',
+    '0x2f389cE8bD8ff92De3402FFCe4691d17fC4f6535',
+    '0x308eD4B7b49797e1A98D3818bFF6fe5385410370',
+    '0x3CBdeD43EFdAf0FC77b9C55F6fC9988fCC9b757d',
+    '0x48549A34AE37b12F6a30566245176994e17C6b4A',
+    '0x5512d943eD1f7c8a43F3435C85F7aB68b30121b0',
+    '0x67d40EE1A85bf4a4Bb7Ffae16De985e8427B6b45',
+    '0x6aCDFBA02D390b97Ac2b2d42A63E85293BCc160e',
+    '0x6F1cA141A28907F78Ebaa64fb83A9088b02A8352',
+    '0x72a5843cc08275C8171E582972Aa4fDa8C397B2A',
+    '0x7Db418b5D567A4e0E8c59Ad71BE1FcE48f3E6107',
+    '0x7F19720A857F834887FC9A7bC0a0fBe7Fc7f8102',
+    '0x7F367cC41522cE07553e823bf3be79A889DEbe1B',
+    '0x8576aCC5C05D6Ce88f4e49bf65BdF0C62F91353C',
+    '0x901bb9583b24D97e995513C6778dc6888AB6870e',
+    '0x9F4cda013E354b8fC285BF4b9A60460cEe7f7Ea9',
+    '0xA7e5d5A720f06526557c513402f2e6B5fA20b008',
+    '0xC455f7fd3e0e12afd51fba5c106909934D8A0e4a',
+    '0xd882cFc20F52f2599D84b8e8D58C7FB62cfE344b',
+    '0xe7aa314c77F4233C18C6CC84384A9247c0cf367B',
+    '0xfEC8A60023265364D066a1212fDE3930F6Ae8da7',
+    '0x7FF9cFad3877F21d41Da833E2F775dB0569eE3D9',
+    '0x098B716B8Aaf21512996dC57EB0615e2383E2f96',
+    '0xa0e1c89Ef1a489c9C7dE96311eD5Ce5D32c20E4B',
+    '0x3Cffd56B47B7b41c56258D9C7731ABaDc360E073',
+    '0x53b6936513e738f44FB50d2b9476730C0Ab3Bfc1',
+    '0x35fB6f6DB4fb05e6A4cE86f2C93691425626d4b1',
+    '0xF7B31119c2682c88d88D455dBb9d5932c65Cf1bE',
+    '0x3e37627dEAA754090fBFbb8bd226c1CE66D255e9',
+    '0x08723392Ed15743cc38513C4925f5e6be5c17243',
+    '0x8589427373D6D84E98730D7795D8f6f8731FDA16',
+    '0x722122dF12D4e14e13Ac3b6895a86e84145b6967',
+    '0xDD4c48C0B24039969fC16D1cdF626eaB821d3384',
+    '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
+    '0xd96f2B1c14Db8458374d9Aca76E26c3D18364307',
+    '0x4736dCf1b7A3d580672CcE6E7c65cd5cc9cFBa9D',
+    '0xD4B88Df4D29F5CedD6857912842cff3b20C8Cfa3',
+    '0x910Cbd523D972eb0a6f4cAe4618aD62622b39DbF',
+    '0xA160cdAB225685dA1d56aa342Ad8841c3b53f291',
+    '0xFD8610d20aA15b7B2E3Be39B396a1bC3516c7144',
+    '0xF60dD140cFf0706bAE9Cd734Ac3ae76AD9eBC32A',
+    '0x22aaA7720ddd5388A3c0A3333430953C68f1849b',
+    '0xBA214C1c1928a32Bffe790263E38B4Af9bFCD659',
+    '0xb1C8094B234DcE6e03f10a5b673c1d8C69739A00',
+    '0x527653eA119F3E6a1F5BD18fbF4714081D7B31ce',
+    '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2',
+    '0xD691F27f38B395864Ea86CfC7253969B409c362d',
+    '0xaEaaC358560e11f52454D997AAFF2c5731B6f8a6',
+    '0x1356c899D8C9467C7f71C195612F8A395aBf2f0a',
+    '0xA60C772958a3eD56c1F15dD055bA37AC8e523a0D',
+    '0x169AD27A470D064DEDE56a2D3ff727986b15D52B',
+    '0x0836222F2B2B24A3F36f98668Ed8F0B38D1a872f',
+    '0xF67721A2D8F736E75a49FdD7FAd2e31D8676542a',
+    '0x9AD122c22B14202B4490eDAf288FDb3C7cb3ff5E',
+    '0x905b63Fff465B9fFBF41DeA908CEb12478ec7601',
+    '0x07687e702b410Fa43f4cB4Af7FA097918ffD2730',
+    '0x94A1B5CdB22c43faab4AbEb5c74999895464Ddaf',
+    '0xb541fc07bC7619fD4062A54d96268525cBC6FfEF',
+    '0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc',
+    '0x47CE0C6eD5B0Ce3d3A51fdb1C52DC66a7c3c2936',
+    '0x23773E65ed146A459791799d01336DB287f25334',
+    '0xD21be7248e0197Ee08E0c20D4a96DEBdaC3D20Af',
+    '0x610B717796ad172B316836AC95a2ffad065CeaB4',
+    '0x178169B423a011fff22B9e3F3abeA13414dDD0F1',
+    '0xbB93e510BbCD0B7beb5A853875f9eC60275CF498',
+    '0x2717c5e28cf931547B621a5dddb772Ab6A35B701',
+    '0x03893a7c7463AE47D46bc7f091665f1893656003',
+    '0xCa0840578f57fE71599D29375e16783424023357',
+    '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2',
+    '0x8589427373D6D84E98730D7795D8f6f8731FDA16',
+    '0x722122dF12D4e14e13Ac3b6895a86e84145b6967',
+    '0xDD4c48C0B24039969fC16D1cdF626eaB821d3384',
+    '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b',
+    '0xd96f2B1c14Db8458374d9Aca76E26c3D18364307',
+    '0x4736dCf1b7A3d580672CcE6E7c65cd5cc9cFBa9D',
   ]);
   if (bannedAddresses.has(address)) throw new Error(errMsg);
 
   // Next we check against the Chainalysis contract.
-  const abi = [
-    "function isSanctioned(address addr) external view returns (bool)",
-  ];
-  const contract = new Contract(
-    "0x40C57923924B5c5c5455c48D93317139ADDaC8fb",
-    abi,
-    provider
-  );
+  const abi = ['function isSanctioned(address addr) external view returns (bool)'];
+  const contract = new Contract('0x40C57923924B5c5c5455c48D93317139ADDaC8fb', abi, provider);
   if (await contract.isSanctioned(address)) throw new Error(errMsg);
   return true;
 }

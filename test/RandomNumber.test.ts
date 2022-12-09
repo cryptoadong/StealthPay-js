@@ -1,22 +1,22 @@
-import { RandomNumber } from "../src/classes/RandomNumber";
-import { expect } from "chai";
-import { BigNumber, isHexString } from "../src/ethers";
+import { RandomNumber } from '../src/classes/RandomNumber';
+import { expect } from 'chai';
+import { BigNumber, isHexString } from '../src/ethers';
 
 const numberOfRuns = 10; // number of runs for tests that execute in a loop
 
-describe("RandomNumber class", () => {
+describe('RandomNumber class', () => {
   let random: RandomNumber;
 
   beforeEach(() => {
     random = new RandomNumber();
   });
 
-  it("initializes an instance with a random BigNumber", () => {
+  it('initializes an instance with a random BigNumber', () => {
     const { value } = random;
     expect(value.constructor).to.equal(BigNumber);
   });
 
-  it("returns random value as a 32 byte hex string", () => {
+  it('returns random value as a 32 byte hex string', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       /**
        *  RandomNumber格式
@@ -42,7 +42,7 @@ describe("RandomNumber class", () => {
     }
   });
 
-  it("returns random value as a hex string without the 0x prefix", () => {
+  it('returns random value as a hex string without the 0x prefix', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       random = new RandomNumber();
       const hex = random.asHexSlim;
@@ -51,7 +51,7 @@ describe("RandomNumber class", () => {
     }
   });
 
-  it("asHex and asHexSlim are equivalent", () => {
+  it('asHex and asHexSlim are equivalent', () => {
     const hex = random.asHex;
     const first16Bytes = hex.slice(2, 34);
     const last16Bytes = hex.slice(34);

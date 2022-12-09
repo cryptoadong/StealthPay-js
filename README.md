@@ -13,7 +13,7 @@ Once verifying compatibility, install with `yarn add @scopelift/spayment-js`
 
 ## Overview
 
-The spayment-js library aims to abstract away the math and cryptography required for using SPayment so it's easy to build on top of the SPayment protocol. Most documentation lives in the [FAQ](https://app.spayment.cash/faq), and the [Technical Details](https://app.spayment.cash/faq#technical-details) section provides a pretty thorough overview. Here we cover some of the documentation specific to spayment-js.
+The spayment-js library aims to abstract away the math and cryptography required for using SPayment so it's easy to build on top of the SPayment protocol. Most documentation lives in the [FAQ](https://app.spayment.io/faq), and the [Technical Details](https://app.spayment.io/faq#technical-details) section provides a pretty thorough overview. Here we cover some of the documentation specific to spayment-js.
 
 Below is an overview of the files within this library. If you like reading code to understand things, read in the order files are listed below. This will start from the full, big-picture view of how SPayment works then go into the details.
 
@@ -45,7 +45,7 @@ The shared secret used to encrypt the random number is 256 bits, so we XOR that 
 
 Since the XOR of these two parameters results in a 256 bit ciphertext of the same strength regardless of whether the random number is 128 bits or 256 bits, the `RandomNumber` class only generates a 128 bit random number, and lets the user provide the other 128 bits. This "free" 128 bits of data is known as the _payload extension_, and can be used to send short memos, recognize app-specific transactions, or whatever else developers can thing of.
 
-The corresponding FAQ question can be found [here](https://app.spayment.cash/faq#what-is-the-payload-extension-and-how-do-i-use-it).
+The corresponding FAQ question can be found [here](https://app.spayment.io/faq#what-is-the-payload-extension-and-how-do-i-use-it).
 
 ### Private Key Generation
 
@@ -61,13 +61,13 @@ Borrowing the [nomenclature](https://electriccoin.co/blog/explaining-viewing-key
 
 This allows users to give their viewing key to third party scanning services that can alert them of received funds, but without giving those services access to their funds.
 
-The corresponding FAQ question can be found [here](https://app.spayment.cash/faq#what-are-spending-and-viewing-keys).
+The corresponding FAQ question can be found [here](https://app.spayment.io/faq#what-are-spending-and-viewing-keys).
 
 ### Hooks
 
 If you’re familiar with [ERC-777](https://eips.ethereum.org/EIPS/eip-777) or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract.
 
-SPayment works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.spayment.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `SPayment.sol` for more information on hwo to use hooks.
+SPayment works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.spayment.io/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `SPayment.sol` for more information on hwo to use hooks.
 
 ## Usage Example
 
@@ -85,7 +85,7 @@ import { signer } from "the/users/connected/wallet"; // assume user previously c
 const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 // Define the send parameters
-const recipientId = "msolomon.eth";
+const recipientId = "knwin.eth";
 const amount = parseUnits("1", 18); // sending 1 ETH
 const tokenAddress = ETH_ADDRESS; // we're sending ETh
 

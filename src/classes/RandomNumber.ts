@@ -3,8 +3,8 @@
  * @dev In the SPayment Protocol, all random numbers should be 32 bytes to ensure sufficient security
  */
 
-import { BigNumber, hexZeroPad } from "../ethers";
-import { utils } from "noble-secp256k1";
+import { BigNumber, hexZeroPad } from '../ethers';
+import { utils } from 'noble-secp256k1';
 
 export class RandomNumber {
   readonly sizeInBytes = 32; // generated random number will always be 32 bytes

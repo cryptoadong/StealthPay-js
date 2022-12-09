@@ -5,11 +5,11 @@ import {
   StaticJsonRpcProvider,
   Overrides,
   Web3Provider,
-} from "./ethers";
+} from './ethers';
 
 // ========================================= Ethers types ==========================================
-export { TransactionResponse } from "./ethers";
-import { TransactionResponse } from "./ethers";
+export { TransactionResponse } from './ethers';
+import { TransactionResponse } from './ethers';
 export type ExternalProvider = EthersExternalProvider | JsonRpcFetchFunc;
 export type EthersProvider = Web3Provider | StaticJsonRpcProvider;
 

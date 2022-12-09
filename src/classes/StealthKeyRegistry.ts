@@ -2,20 +2,20 @@
  * @dev Simplifies interactions with the StealthKeyRegistry contract
  */
 
-import { KeyPair } from "../classes/KeyPair";
-import { StealthKeyRegistry as StealthKeyRegistryContract } from "@cryptoadong/spayment-contracts-core/typechain";
-import { Contract, JsonRpcSigner } from "../ethers";
-import type { EthersProvider } from "../types";
+import { KeyPair } from '../classes/KeyPair';
+import { StealthKeyRegistry as StealthKeyRegistryContract } from '@cryptoadong/spayment-contracts-core/typechain';
+import { Contract, JsonRpcSigner } from '../ethers';
+import type { EthersProvider } from '../types';
 
 // register Contract Address of the StealthKeyRegistry is the same on all supported networks
-const stealthKeyRegistry = "0x3bf549749C72F25FAc0DF3574849c5fC54De65B1";
+const stealthKeyRegistry = '0x18AF4c85b29091739D55CE2090E0DFe560757f66';
 const abi = [
-  "event StealthKeyChanged(address indexed registrant, uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)",
-  "function DOMAIN_SEPARATOR() view returns (bytes32)",
-  "function STEALTHKEYS_TYPEHASH() view returns (bytes32)",
-  "function setStealthKeys(uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)",
-  "function setStealthKeysOnBehalf(address registrant, uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey, uint8 v, bytes32 r, bytes32 s)",
-  "function stealthKeys(address registrant) view returns (uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)",
+  'event StealthKeyChanged(address indexed registrant, uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)',
+  'function DOMAIN_SEPARATOR() view returns (bytes32)',
+  'function STEALTHKEYS_TYPEHASH() view returns (bytes32)',
+  'function setStealthKeys(uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)',
+  'function setStealthKeysOnBehalf(address registrant, uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey, uint8 v, bytes32 r, bytes32 s)',
+  'function stealthKeys(address registrant) view returns (uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)',
 ];
 
 export class StealthKeyRegistry {
@@ -30,11 +30,7 @@ export class StealthKeyRegistry {
    */
   constructor(signerOrProvider: JsonRpcSigner | EthersProvider) {
     //新建合约对象
-    this._registry = new Contract(
-      stealthKeyRegistry,
-      abi,
-      signerOrProvider
-    ) as StealthKeyRegistryContract;
+    this._registry = new Contract(stealthKeyRegistry, abi, signerOrProvider) as StealthKeyRegistryContract;
   }
 
   /**
@@ -44,32 +40,16 @@ export class StealthKeyRegistry {
   async getStealthKeys(account: string) {
     // Read stealth keys from the resolver contract
     const keys = await this._registry.stealthKeys(account);
-    const {
-      spendingPubKeyPrefix,
-      spendingPubKey,
-      viewingPubKeyPrefix,
-      viewingPubKey,
-    } = keys;
+    const { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = keys;
 
     // Throw if no stealth keys are set
-    if (
-      spendingPubKeyPrefix.eq(0) ||
-      spendingPubKey.eq(0) ||
-      viewingPubKeyPrefix.eq(0) ||
-      viewingPubKey.eq(0)
-    ) {
+    if (spendingPubKeyPrefix.eq(0) || spendingPubKey.eq(0) || viewingPubKeyPrefix.eq(0) || viewingPubKey.eq(0)) {
       throw new Error(`Address ${account} has not registered stealth keys. Please ask them to setup their SPayment account`); // prettier-ignore
     }
 
     // Decompress keys and return them 解压
-    const spendingPublicKey = KeyPair.getUncompressedFromX(
-      spendingPubKey,
-      spendingPubKeyPrefix.toNumber()
-    );
-    const viewingPublicKey = KeyPair.getUncompressedFromX(
-      viewingPubKey,
-      viewingPubKeyPrefix.toNumber()
-    );
+    const spendingPublicKey = KeyPair.getUncompressedFromX(spendingPubKey, spendingPubKeyPrefix.toNumber());
+    const viewingPublicKey = KeyPair.getUncompressedFromX(viewingPubKey, viewingPubKeyPrefix.toNumber());
 
     return { spendingPublicKey, viewingPublicKey };
   }
@@ -82,26 +62,15 @@ export class StealthKeyRegistry {
    * attached to `this.registry` is used
    * @returns Transaction
    */
-  async setStealthKeys(
-    spendingPublicKey: string,
-    viewingPublicKey: string,
-    signer: JsonRpcSigner | null = null
-  ) {
+  async setStealthKeys(spendingPublicKey: string, viewingPublicKey: string, signer: JsonRpcSigner | null = null) {
     // Get instance of StealthKeyRegistry contract
     const registry = signer ? this._registry.connect(signer) : this._registry;
 
     // Break public keys into the required components to store compressed public keys
-    const { prefix: spendingPrefix, pubKeyXCoordinate: spendingPubKeyX } =
-      KeyPair.compressPublicKey(spendingPublicKey);
-    const { prefix: viewingPrefix, pubKeyXCoordinate: viewingPubKeyX } =
-      KeyPair.compressPublicKey(viewingPublicKey);
+    const { prefix: spendingPrefix, pubKeyXCoordinate: spendingPubKeyX } = KeyPair.compressPublicKey(spendingPublicKey);
+    const { prefix: viewingPrefix, pubKeyXCoordinate: viewingPubKeyX } = KeyPair.compressPublicKey(viewingPublicKey);
 
     // Send transaction to set the keys
-    return registry.setStealthKeys(
-      spendingPrefix,
-      spendingPubKeyX,
-      viewingPrefix,
-      viewingPubKeyX
-    );
+    return registry.setStealthKeys(spendingPrefix, spendingPubKeyX, viewingPrefix, viewingPubKeyX);
   }
 }

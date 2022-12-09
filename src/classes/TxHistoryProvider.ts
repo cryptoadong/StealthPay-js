@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, EtherscanProvider } from "../ethers";
+import { BigNumber, BigNumberish, EtherscanProvider } from '../ethers';
 
 let _isCommunityResource = false;
 
@@ -32,20 +32,18 @@ export class TxHistoryProvider extends EtherscanProvider {
   getBaseUrl(): string {
     switch (BigNumber.from(this.network.chainId).toNumber()) {
       case 1:
-        return "https://api.etherscan.io";
+        return 'https://api.etherscan.io';
       case 5:
-        return "https://api-goerli.etherscan.io";
+        return 'https://api-goerli.etherscan.io';
       case 10:
-        return "https://api-optimistic.etherscan.io";
+        return 'https://api-optimistic.etherscan.io';
       case 137:
-        return "https://api.polygonscan.com";
+        return 'https://api.polygonscan.com';
       case 42161:
-        return "https://api.arbiscan.io";
+        return 'https://api.arbiscan.io';
     }
 
-    throw new Error(
-      `Unsupported network ${JSON.stringify(this.network.chainId)}`
-    );
+    throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);
   }
 
   isCommunityResource(): boolean {
