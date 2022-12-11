@@ -304,7 +304,7 @@ function getResolutionInstance() {
  *
  * @param name Name to resolve
  * @param provider Provider connected to mainnet. If the provider is connected to a different
- * network, we use the spayment-js default provider instead
+ * network, we use the stealthpay-js default provider instead
  * @returns
  */
 async function resolveEns(name: string, provider: EthersProvider) {

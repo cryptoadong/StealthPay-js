@@ -26,10 +26,10 @@ const ENSRegistryAddress = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'; // same
 export const getResolverContract = async (name: string, provider: EthersProvider) => {
   const registry = createContract(ENSRegistryAddress, ENS_REGISTRY_ABI, provider);
   const resolverAddress = (await registry.resolver(ensNamehash(name))) as string;
-  // When using this method we expect the user will have an SPayment-compatible StealthKey resolver. There are two types:
+  // When using this method we expect the user will have an StealthPay-compatible StealthKey resolver. There are two types:
   //   1. ForwardingStealthKeyResolver
   //   2. PublicStealthKeyResolver
-  // Both can be found in this repo: https://github.com/ScopeLift/ens-resolvers
+  // Both can be found in this repo: https://github.com/cryptoadong/ens-resolvers
   //
   // Regardless of which type the user has, the ABI for getting and setting stealth keys is the same. Therefore
   // it's ok that we use always use the same ABI here)
@@ -64,12 +64,12 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
   try {
     keys = (await resolver.stealthKeys(namehash(name))) as StealthKeys;
   } catch (err) {
-    throw new Error(`The configured resolver for ${name} does not support stealth keys. Please ask them to setup their SPayment account`); // prettier-ignore
+    throw new Error(`The configured resolver for ${name} does not support stealth keys. Please ask them to setup their StealthPay account`); // prettier-ignore
   }
 
   // Make sure the found keys are not zero
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
-    throw new Error(`Public keys not found for ${name}. Please ask them to setup their SPayment account`);
+    throw new Error(`Public keys not found for ${name}. Please ask them to setup their StealthPay account`);
   }
 
   // Uncompress keys and return them

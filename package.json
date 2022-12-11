@@ -1,6 +1,6 @@
 {
-  "name": "@cryptoadong/spayment-js",
-  "version": "0.0.2",
+  "name": "@cryptoadong/stealthpay-js",
+  "version": "0.0.5",
   "description": "Send and receive stealth payments",
   "author": "Crypto Adong <cryptoadong@gmail.com>",
   "private": false,
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "tsc --build",
-    "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:spayment-js\\//gI' coverage/lcov.info",
+    "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:stealthpay-js\\//gI' coverage/lcov.info",
     "lint": "eslint --ext .js,.ts ",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
@@ -31,7 +31,7 @@
     "@ethersproject/bignumber": "^5.5.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@types/bn.js": "^5.1.0",
-    "@cryptoadong/spayment-contracts-core": "^0.1.0",
+    "@cryptoadong/stealthpay-contracts-core": "^0.0.2",
     "@types/chai": "^4.2.16",
     "@types/mocha": "^8.2.2",
     "chai": "^4.3.4",
@@ -63,12 +63,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cryptoadong/spayment-js.git"
+    "url": "git+https://github.com/cryptoadong/stealthpay-js.git"
   },
   "bugs": {
-    "url": "https://github.com/cryptoadong/spayment-js/issues"
+    "url": "https://github.com/cryptoadong/stealthpay-js/issues"
   },
-  "homepage": "https://github.com/cryptoadong/spayment-js#readme",
+  "homepage": "https://github.com/cryptoadong/stealthpay-js#readme",
   "directories": {
     "test": "test"
   }

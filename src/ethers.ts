@@ -1,5 +1,5 @@
 /**
- * @notice Helper file to import all ethers.js methods used in spayment-js (excluding tests). This has two benefits:
+ * @notice Helper file to import all ethers.js methods used in stealthpay-js (excluding tests). This has two benefits:
  *   1. Easy to track all ethers packages used since all imports are in this file
  *   2. Removes noise from having a lot of import lines in other packages
  */

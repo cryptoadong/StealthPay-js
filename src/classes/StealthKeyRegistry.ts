@@ -3,12 +3,12 @@
  */
 
 import { KeyPair } from '../classes/KeyPair';
-import { StealthKeyRegistry as StealthKeyRegistryContract } from '@cryptoadong/spayment-contracts-core/typechain';
+import { StealthKeyRegistry as StealthKeyRegistryContract } from '@cryptoadong/stealthpay-contracts-core/typechain';
 import { Contract, JsonRpcSigner } from '../ethers';
 import type { EthersProvider } from '../types';
 
 // register Contract Address of the StealthKeyRegistry is the same on all supported networks
-const stealthKeyRegistry = '0x18AF4c85b29091739D55CE2090E0DFe560757f66';
+const stealthKeyRegistry = '0x39C06e5630455166AeAE0bDedd07eddca765E7eA';
 const abi = [
   'event StealthKeyChanged(address indexed registrant, uint256 spendingPubKeyPrefix, uint256 spendingPubKey, uint256 viewingPubKeyPrefix, uint256 viewingPubKey)',
   'function DOMAIN_SEPARATOR() view returns (bytes32)',
@@ -44,7 +44,7 @@ export class StealthKeyRegistry {
 
     // Throw if no stealth keys are set
     if (spendingPubKeyPrefix.eq(0) || spendingPubKey.eq(0) || viewingPubKeyPrefix.eq(0) || viewingPubKey.eq(0)) {
-      throw new Error(`Address ${account} has not registered stealth keys. Please ask them to setup their SPayment account`); // prettier-ignore
+      throw new Error(`Address ${account} has not registered stealth keys. Please ask them to setup their StealthPay account`); // prettier-ignore
     }
 
     // Decompress keys and return them 解压

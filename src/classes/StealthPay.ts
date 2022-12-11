@@ -1,5 +1,5 @@
 /**
- * @dev Simplifies interaction with the SPayment contracts
+ * @dev Simplifies interaction with the StealthPay contracts
  */
 
 import {
@@ -26,57 +26,57 @@ import {
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
-import { SPayment as SPaymentContract, Erc20 as ERC20 } from '@cryptoadong/spayment-contracts-core/typechain';
+import { StealthPay as StealthPayContract, Erc20 as ERC20 } from '@cryptoadong/stealthpay-contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
-// SPayment.sol ABI
-const { abi } = require('../contracts/SPayment.sol/SPayment.json');
+// StealthPay.sol ABI
+const { abi } = require('../contracts/StealthPay.sol/StealthPay.json');
 
 // Mapping from chainId to contract information
-const spaymentAddress = '0x036F3416fED1a4b9eB59265ab24467315FB718a9'; // same on all supported networks
+const stealthpayAddress = '0x39C06e5630455166AeAE0bDedd07eddca765E7eA'; // same on all supported networks
 const subgraphs = {
-  1: 'https://api.thegraph.com/subgraphs/name/cryptoadong/spaymentmainnet',
-  5: ' https://api.thegraph.com/subgraphs/name/cryptoadong/spaymentgoerli',
-  10: 'https://api.thegraph.com/subgraphs/name/cryptoadong/spaymentoptimism',
-  137: 'https://api.thegraph.com/subgraphs/name/cryptoadong/spaymentpolygon',
-  42161: 'https://api.thegraph.com/subgraphs/name/cryptoadong/spaymentarbitrumone',
+  1: 'https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaymainnet',
+  5: ' https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaygoerli',
+  10: 'https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpayoptimism',
+  137: 'https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaypolygon',
+  42161: 'https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpayarbitrumone',
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: {
     chainId: 1,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 12343914,
     subgraphUrl: subgraphs[1],
   }, // Mainnet
   5: {
     chainId: 5,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 7718444,
     subgraphUrl: subgraphs[5],
   }, // Goerli
   10: {
     chainId: 10,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 4069556,
     subgraphUrl: subgraphs[10],
   }, // Optimism
   137: {
     chainId: 137,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 20717318,
     subgraphUrl: subgraphs[137],
   }, // Polygon
   1337: {
     chainId: 1337,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 8505089,
     subgraphUrl: false,
   }, // Local
   42161: {
     chainId: 42161,
-    spaymentAddress,
+    stealthpayAddress,
     startBlock: 7285883,
     subgraphUrl: subgraphs[42161],
   }, // Arbitrum
@@ -101,7 +101,7 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   // Otherwise verify the user's provided chain config is valid and return it
-  const { chainId, startBlock, subgraphUrl, spaymentAddress } = chainConfig;
+  const { chainId, startBlock, subgraphUrl, stealthpayAddress } = chainConfig;
   const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
 
   if (!isValidStartBlock) {
@@ -115,7 +115,7 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   return {
-    spaymentAddress: getAddress(spaymentAddress),
+    stealthpayAddress: getAddress(stealthpayAddress),
     startBlock,
     chainId,
     subgraphUrl,
@@ -147,9 +147,9 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   throw new Error(`No Infura URL for chainId ${chainId}.`);
 };
 
-export class SPayment {
+export class StealthPay {
   readonly chainConfig: ChainConfig;
-  readonly spaymentContract: SPaymentContract;
+  readonly stealthpayContract: StealthPayContract;
   // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
   // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
   // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
@@ -157,13 +157,13 @@ export class SPayment {
 
   // ========================================= CONSTRUCTOR =========================================
   /**
-   * @notice Create SPayment instance to interact with the SPayment contracts
+   * @notice Create StealthPay instance to interact with the StealthPay contracts
    * @param provider ethers provider to use
    * @param chainConfig The chain configuration of the network or a network ID to use a default one
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.spaymentContract = new Contract(this.chainConfig.spaymentAddress, abi, provider) as SPaymentContract;
+    this.stealthpayContract = new Contract(this.chainConfig.stealthpayAddress, abi, provider) as StealthPayContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
@@ -180,9 +180,9 @@ export class SPayment {
   }
 
   /**
-   * @notice Send funds to a recipient via SPayment
+   * @notice Send funds to a recipient via StealthPay
    * @dev If sending tokens, make sure to handle the approvals before calling this method
-   * @dev The provider used for sending the transaction is the one associated with the SPayment instance
+   * @dev The provider used for sending the transaction is the one associated with the StealthPay instance
    * @dev Fetching the latest toll and including that value on top of `amount` is automatically handled
    * @param signer Signer to send transaction from
    * @param token Address of token to send, excluding toll. Use 'ETH' or '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -222,7 +222,7 @@ export class SPayment {
     }
 
     // Get toll amount from contract
-    const toll = await this.spaymentContract.toll();
+    const toll = await this.stealthpayContract.toll();
     console.log('toll:', toll);
 
     // Parse provided overrides
@@ -279,7 +279,7 @@ export class SPayment {
     //ETH发送
     if (isEth(token)) {
       const txOverrides = { ...localOverrides, value: toll.add(amount) };
-      tx = await this.spaymentContract
+      tx = await this.stealthpayContract
         .connect(txSigner)
         .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
       console.log('send ETH .....');
@@ -289,7 +289,7 @@ export class SPayment {
     } else {
       //其他代币发送
       const txOverrides = { ...localOverrides, value: toll };
-      tx = await this.spaymentContract
+      tx = await this.stealthpayContract
         .connect(txSigner)
         .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
       console.log('send Token .....');
@@ -304,7 +304,7 @@ export class SPayment {
 
   /**
    * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
-   * @dev The provider used for sending the transaction is the one associated with the SPayment instance
+   * @dev The provider used for sending the transaction is the one associated with the StealthPay instance
    * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param spendingPrivateKey Receiver's spending private key
    * @param token Address of token to withdraw,
@@ -335,13 +335,13 @@ export class SPayment {
       }
     } else {
       // Withdrawing a token
-      return await this.spaymentContract.connect(txSigner).withdrawToken(destination, token, overrides);
+      return await this.stealthpayContract.connect(txSigner).withdrawToken(destination, token, overrides);
     }
   }
 
   /**
    * @notice Withdraw tokens by sending a meta-transaction on behalf of a user
-   * @dev The provider used for sending the transaction is the one associated with the SPayment instance
+   * @dev The provider used for sending the transaction is the one associated with the StealthPay instance
    * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param signer Signer to send transaction from
    * @param stealthAddr Stealth address funds were sent to
@@ -375,7 +375,7 @@ export class SPayment {
 
     // Send withdraw transaction
     const txSigner = this.getConnectedSigner(signer);
-    return await this.spaymentContract
+    return await this.stealthpayContract
       .connect(txSigner)
       .withdrawTokenOnBehalf(stealthAddr, destination, token, sponsor, sponsorFee, v, r, s, overrides);
   }
@@ -388,7 +388,7 @@ export class SPayment {
   }
 
   /**
-   * @notice Fetches all SPayment event logs using The Graph, if available, falling back to RPC if not
+   * @notice Fetches all StealthPay event logs using The Graph, if available, falling back to RPC if not
    * @param overrides Override the start and end block used for scanning; ignored if using The Graph
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
@@ -421,7 +421,7 @@ export class SPayment {
   }
 
   /**
-   * @notice Fetches all SPayment event logs using The Graph
+   * @notice Fetches all StealthPay event logs using The Graph
    * @dev Currently ignores the start and end block parameters and returns all events; this may change in a
    * future version
    * @param startBlock Ignored
@@ -466,7 +466,7 @@ export class SPayment {
   }
 
   /**
-   * @notice Fetches all SPayment event logs between specified blocks using the standard RPC provider
+   * @notice Fetches all StealthPay event logs between specified blocks using the standard RPC provider
    * @param startBlock Block number to begin scanning for events
    * @param endBlock Block number to end scanning for events, or 'latest'
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
@@ -483,8 +483,8 @@ export class SPayment {
     if (this.chainConfig.chainId === 137) throw new Error(errMsg('Polygon'));
 
     // Get list of all Announcement events
-    const announcementFilter = this.spaymentContract.filters.Announcement(null, null, null, null, null);
-    const announcementEvents = await this.spaymentContract.queryFilter(announcementFilter, startBlock, endBlock);
+    const announcementFilter = this.stealthpayContract.filters.Announcement(null, null, null, null, null);
+    const announcementEvents = await this.stealthpayContract.queryFilter(announcementFilter, startBlock, endBlock);
 
     const announcements = await Promise.all(
       announcementEvents.map(async (event) => {
@@ -511,7 +511,7 @@ export class SPayment {
   }
 
   /**
-   * @notice Scans all SPayment event logs for funds sent to the specified address
+   * @notice Scans all StealthPay event logs for funds sent to the specified address
    * @dev This is a convenience method that first runs `fetchAllAnnouncements`, then filters them through
    * the static helper `isAnnouncementForUser`. The latter is CPU intensive and this method will block while
    * all announcements are processed. To avoid performance issues, you may need to run fetching and filtering
@@ -525,7 +525,7 @@ export class SPayment {
 
     const userAnnouncements = announcements.reduce((userAnns, ann) => {
       const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
-      const { isForUser, randomNumber } = SPayment.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
+      const { isForUser, randomNumber } = StealthPay.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
       const token = getAddress(tokenAddr); // ensure checksummed address
       const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
       if (isForUser)
@@ -580,7 +580,7 @@ export class SPayment {
   }
 
   /**
-   * @notice Asks a user to sign a message to generate two SPayment-specific private keys for them
+   * @notice Asks a user to sign a message to generate two StealthPay-specific private keys for them
    * @dev Only safe for use with wallets that implement deterministic ECDSA signatures as specified by RFC 6979 (which
    * might be all of them?)
    * @param signer Signer to sign message from
@@ -588,7 +588,7 @@ export class SPayment {
    */
   async generatePrivateKeys(signer: JsonRpcSigner | Wallet) {
     // Base message that will be signed
-    const baseMessage = 'Sign this message to access your SPayment account.\n\nOnly sign this message for a trusted client!'; // prettier-ignore
+    const baseMessage = 'Sign this message to access your StealthPay account.\n\nOnly sign this message for a trusted client!'; // prettier-ignore
 
     // Append chain ID if not mainnet to mitigate replay attacks
     const { chainId } = await this.provider.getNetwork();
@@ -671,7 +671,7 @@ export class SPayment {
    * @dev Return type is an ethers Signature: { r: string; s: string; _vs: string, recoveryParam: number; v: number; }
    * @param spendingPrivateKey Receiver's spending private key that is doing the signing
    * @param chainId Chain ID where contract is deployed
-   * @param contract SPayment contract address that withdrawal transaction will be sent to
+   * @param contract StealthPay contract address that withdrawal transaction will be sent to
    * @param acceptor Withdrawal destination
    * @param token Address of token to withdraw
    * @param sponsor Address of relayer

@@ -20,7 +20,7 @@ const pubKeysWallet = {
   spendingPublicKey: publicKey,
   viewingPublicKey: publicKey,
 };
-const pubKeysSPayment = {
+const pubKeysStealthPay = {
   spendingPublicKey: '0x04ff1f0ac74598d64078e586a2ce68d6b71143ff9e4e3bf3b04efb71f34d92b9b08a40cdd8ae9048e6268a402a60252a8b4cd43ae7edd7418ed4bbcadaf9fd4200', // prettier-ignore
   viewingPublicKey: '0x04ebf518ef7f6ef705d374fd07f32d8c496dcb44554deb1c13940f45c7ce2202a055ab7fcdbb1868d1103c4f644f802de56109f0466294c122e466b65015f08f66', // prettier-ignore
 };
@@ -146,41 +146,41 @@ describe('Utilities', () => {
     it('looks up recipients by address, advanced mode off', async () => {
       const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`); // otherwise throws with unsupported network since we're on localhost
       const keys = await utils.lookupRecipient(address, ethersProvider);
-      expect(keys.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
 
       // Same test, but with advanced mode off explicitly specified
       const keys2 = await utils.lookupRecipient(address, ethersProvider, {
         advanced: false,
       });
-      expect(keys2.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys2.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys2.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys2.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
     });
 
     it('looks up recipients by ENS, advanced mode off', async () => {
       const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
       const keys = await utils.lookupRecipient('knwin.eth', ethersProvider);
       // These values are set on the Goerli resolver
-      expect(keys.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
 
       // Same test, but with advanced mode off explicitly specified
       const keys2 = await utils.lookupRecipient('knwin.eth', ethersProvider, { advanced: false });
-      expect(keys2.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys2.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys2.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys2.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
     });
 
     // Skipped since CNS support isn't really well supported currently anyway.
     it.skip('looks up recipients by CNS, advanced mode off', async () => {
       const keys = await utils.lookupRecipient('udtestdev-knwin.crypto', ethersProvider);
       // These values are set on the Rinkeby resolver
-      expect(keys.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
 
       // Same test, but with advanced mode off explicitly specified
       const keys2 = await utils.lookupRecipient('udtestdev-knwin.crypto', ethersProvider, { advanced: false });
-      expect(keys2.spendingPublicKey).to.equal(pubKeysSPayment.spendingPublicKey);
-      expect(keys2.viewingPublicKey).to.equal(pubKeysSPayment.viewingPublicKey);
+      expect(keys2.spendingPublicKey).to.equal(pubKeysStealthPay.spendingPublicKey);
+      expect(keys2.viewingPublicKey).to.equal(pubKeysStealthPay.viewingPublicKey);
     });
 
     // --- Address history by network ---
@@ -241,7 +241,7 @@ describe('Utilities', () => {
     it('throws when looking up an address that has not sent a transaction', async () => {
       const address = '0x0000000000000000000000000000000000000002';
       const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`); // otherwise throws with unsupported network since we're on localhost
-      const errorMsg = `Address ${address} has not registered stealth keys. Please ask them to setup their SPayment account`;
+      const errorMsg = `Address ${address} has not registered stealth keys. Please ask them to setup their StealthPay account`;
       await expectRejection(utils.lookupRecipient(address, ethersProvider), errorMsg);
     });
 

@@ -7,8 +7,8 @@ import type { EthersProvider } from '../types';
 import { CNS_RESOLVER_ABI } from './constants';
 import { createContract } from './utils';
 
-export const cnsKeyPathSpending = 'crypto.ETH.spayment.spending_public_key';
-export const cnsKeyPathViewing = 'crypto.ETH.spayment.viewing_public_key';
+export const cnsKeyPathSpending = 'crypto.ETH.stealthpay.spending_public_key';
+export const cnsKeyPathViewing = 'crypto.ETH.stealthpay.viewing_public_key';
 
 /**
  * @notice Computes CNS namehash of the input CNS domain, normalized to CNS compatibility
@@ -38,7 +38,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
     domainNamehash
   );
   if (!compressedSpendingPublicKey || !compressedViewingPublicKey) {
-    throw new Error(`Public keys not found for ${name}. User must setup their SPayment account`);
+    throw new Error(`Public keys not found for ${name}. User must setup their StealthPay account`);
   }
   // Return uncompressed public keys
   const spendingPublicKey = `0x${Point.fromHex(compressedSpendingPublicKey.slice(2)).toHex()}`;

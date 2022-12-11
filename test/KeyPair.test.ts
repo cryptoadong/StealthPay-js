@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 import { Wallet } from 'ethers';
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
-import { SPayment } from '../src/classes/SPayment';
+import { StealthPay } from '../src/classes/StealthPay';
 import * as utils from '../src/utils/utils';
 import { expectRejection } from './utils';
 import { testPrivateKeys } from './testPrivateKeys';
@@ -189,9 +189,9 @@ describe('KeyPair class', () => {
 
       //if (recipientHardhat.address !== recipient.address) throw new Error('Address mismatch');
 
-      const spayment = new SPayment(ethersProvider, 5); //5表示网络
+      const stealthpay = new StealthPay(ethersProvider, 5); //5表示网络
 
-      const { viewingKeyPair } = await spayment.generatePrivateKeys(recipient);
+      const { viewingKeyPair } = await stealthpay.generatePrivateKeys(recipient);
 
       // Simulate sender encrypting the random number
       const randomNumber = new RandomNumber();

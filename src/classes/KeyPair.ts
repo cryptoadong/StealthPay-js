@@ -27,7 +27,7 @@ function getSharedSecret(privateKey: string, publicKey: string) {
   if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
 
   // We use sharedSecret.slice(2) to ensure the shared secret is not dependent on the prefix, which enables
-  // us to uncompress ephemeralPublicKey from SPayment.sol logs as explained in comments of getUncompressedFromX.
+  // us to uncompress ephemeralPublicKey from StealthPay.sol logs as explained in comments of getUncompressedFromX.
   // Note that a shared secret is really just a point on the curve, so it's an uncompressed public key
   const sharedSecret = secpGetSharedSecret(privateKey.slice(2), publicKey.slice(2), true) as string; // has 04 prefix but not 0x
   return sha256(`0x${sharedSecret.slice(2)}`);
@@ -218,7 +218,7 @@ export class KeyPair {
    * by a private key, we can ensure the result is the same shared secret regardless of whether we assume the 02 or
    * 03 prefix by using the compressed form of the hex shared secret and ignoring the prefix. Therefore if no prefix
    * is provided, we can assume 02, and it's up to the user to make sure they are using this method safely. This is
-   * done because it saves gas in the SPayment contract
+   * done because it saves gas in the StealthPay contract
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */

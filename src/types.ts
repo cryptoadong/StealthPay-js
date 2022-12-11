@@ -34,12 +34,12 @@ export interface TransactionResponseExtended extends TransactionResponse {
   [key: string]: any;
 }
 
-// ======================================= SPayment class types =======================================
-// Settings when instantiating an instance of the SPayment class
+// ======================================= StealthPay class types =======================================
+// Settings when instantiating an instance of the StealthPay class
 export interface ChainConfig {
   chainId: number; // Chain ID of the deployed contract
-  spaymentAddress: string; // address of SPayment contract
-  startBlock: number; // block SPayment contract was deployed at
+  stealthpayAddress: string; // address of StealthPay contract
+  startBlock: number; // block StealthPay contract was deployed at
   subgraphUrl: string | false; // URL of the subgraph used to fetch Announcement events, or false to not use a subgraph
 }
 
@@ -104,7 +104,7 @@ export interface SubgraphAnnouncement {
   txHash: string;
 }
 
-// A UserAnnouncement is an Announcement event from SPayment where the recipient is the specified user
+// A UserAnnouncement is an Announcement event from StealthPay where the recipient is the specified user
 export interface UserAnnouncement {
   amount: BigNumber;
   from: string; // sender address

@@ -1,6 +1,6 @@
 /**
  * @dev Class for managing random numbers
- * @dev In the SPayment Protocol, all random numbers should be 32 bytes to ensure sufficient security
+ * @dev In the StealthPay Protocol, all random numbers should be 32 bytes to ensure sufficient security
  */
 
 import { BigNumber, hexZeroPad } from '../ethers';

@@ -5,11 +5,11 @@ import { expectRejection } from './utils';
 import { JsonRpcSigner } from '../src/ethers';
 import { Wallet } from 'ethers';
 
-import { SPayment } from '../src/classes/SPayment';
+import { StealthPay } from '../src/classes/StealthPay';
 import { StealthKeyRegistry } from '../src/classes/StealthKeyRegistry';
 
 //注册合约
-const stealthKeyRegistryAddress = '0x18AF4c85b29091739D55CE2090E0DFe560757f66';
+const stealthKeyRegistryAddress = '0x39C06e5630455166AeAE0bDedd07eddca765E7eA';
 
 describe('StealthKeyRegistry class', () => {
   let stealthKeyRegistry: StealthKeyRegistry;
@@ -27,7 +27,7 @@ describe('StealthKeyRegistry class', () => {
   //getStealthKeys: 如果账户没有注册隐身钥匙，则抛出。
   it('getStealthKeys: throws if account has not registered stealth keys', async () => {
     const account = Wallet.createRandom().address;
-    const errorMsg = `Address ${account} has not registered stealth keys. Please ask them to setup their SPayment account`;
+    const errorMsg = `Address ${account} has not registered stealth keys. Please ask them to setup their StealthPay account`;
 
     const { spendingPublicKey, viewingPublicKey } = await stealthKeyRegistry.getStealthKeys(
       '0xbC61B73d3b8eea27Ce69AaE05C2457a5ADA04438'
@@ -53,10 +53,10 @@ describe('StealthKeyRegistry class', () => {
     const [user] = await ethers.getSigners(); // type SignerWithAddress
     const userSigner = user as unknown as JsonRpcSigner; // type cast to avoid TS errors
 
-    const spayment = new SPayment(ethers.provider, 5);
+    const stealthpay = new StealthPay(ethers.provider, 5);
 
     //通过签名生成spendingKeyPair和viewingKeyPair
-    const { spendingKeyPair: spendKey, viewingKeyPair: viewKey } = await spayment.generatePrivateKeys(userSigner);
+    const { spendingKeyPair: spendKey, viewingKeyPair: viewKey } = await stealthpay.generatePrivateKeys(userSigner);
 
     // Set keys
     await stealthKeyRegistry.setStealthKeys(spendKey.publicKeyHex, viewKey.publicKeyHex, userSigner);

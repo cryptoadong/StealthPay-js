@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "ISPaymentHookReceiver",
-  "sourceName": "contracts/ISPaymentHookReceiver.sol",
+  "contractName": "IStealthPayHookReceiver",
+  "sourceName": "contracts/IStealthPayHookReceiver.sol",
   "abi": [
     {
       "inputs": [

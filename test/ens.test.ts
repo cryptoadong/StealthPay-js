@@ -50,7 +50,7 @@ describe('ENS functions', () => {
     // getting and setting stealth keys. If this test starts failing, a likely culprit is that this user has changed
     // to a supported resolver or the name registration has expired
     const unsetEnsName = 'abc.eth';
-    const errorMsg = `The configured resolver for ${unsetEnsName} does not support stealth keys. Please ask them to setup their SPayment account`;
+    const errorMsg = `The configured resolver for ${unsetEnsName} does not support stealth keys. Please ask them to setup their StealthPay account`;
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 
@@ -59,7 +59,7 @@ describe('ENS functions', () => {
     // keys. If this test starts failing, a likely culprit is that this user has set their stealth keys or the name
     // registration has expired
     const unsetEnsName = 'unsetStealthKeys.eth';
-    const errorMsg = `Public keys not found for ${unsetEnsName}. Please ask them to setup their SPayment account`;
+    const errorMsg = `Public keys not found for ${unsetEnsName}. Please ask them to setup their StealthPay account`;
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 });

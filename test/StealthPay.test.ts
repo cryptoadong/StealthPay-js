@@ -1,7 +1,7 @@
 import 'mocha';
 import { ethers } from 'hardhat';
 import hardhatConfig from '../hardhat.config';
-import { SPayment } from '../src/classes/SPayment';
+import { StealthPay } from '../src/classes/StealthPay';
 import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
@@ -11,10 +11,10 @@ import { testPrivateKeys } from './testPrivateKeys';
 import type { ChainConfig } from '../src/types';
 import {
   TestToken as ERC20,
-  SPayment as SPaymentContract,
+  StealthPay as StealthPayContract,
   TestTokenFactory as ERC20__factory,
-  SPaymentFactory as SPayment__factory,
-} from '@cryptoadong/spayment-contracts-core';
+  StealthPayFactory as StealthPay__factory,
+} from '@cryptoadong/stealthpay-contracts-core';
 
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
@@ -28,13 +28,13 @@ const overrides = { supportPubKey: true }; // we directly enter a pubkey in thes
 const senderIndex = 2;
 const receiverIndex = 3;
 
-describe('SPayment class', () => {
+describe('StealthPay class', () => {
   let sender: Wallet;
   let receiver: Wallet;
   let deployer: SignerWithAddress;
 
   let dai: ERC20;
-  let spayment: SPayment;
+  let stealthpay: StealthPay;
   let chainConfig: ChainConfig;
 
   const getEthBalance = async (address: string) => {
@@ -61,13 +61,13 @@ describe('SPayment class', () => {
   });
 
   beforeEach(async () => {
-    // Deploy SPayment
+    // Deploy StealthPay
     const toll = parseEther('0.1');
     const tollCollector = ethers.constants.AddressZero; // doesn't matter for these tests
     const tollReceiver = ethers.constants.AddressZero; // doesn't matter for these tests
-    const spaymentFactory = new SPayment__factory(deployer);
-    const spaymentContract = (await spaymentFactory.deploy(toll, tollCollector, tollReceiver)) as SPaymentContract;
-    await spaymentContract.deployTransaction.wait();
+    const stealthpayFactory = new StealthPay__factory(deployer);
+    const stealthpayContract = (await stealthpayFactory.deploy(toll, tollCollector, tollReceiver)) as StealthPayContract;
+    await stealthpayContract.deployTransaction.wait();
 
     // Deploy mock tokens
     const daiFactory = new ERC20__factory(deployer);
@@ -78,81 +78,81 @@ describe('SPayment class', () => {
     const lastBlockNumber = await ethersProvider.getBlockNumber();
     chainConfig = {
       chainId: (await ethersProvider.getNetwork()).chainId,
-      spaymentAddress: spaymentContract.address,
+      stealthpayAddress: stealthpayContract.address,
       startBlock: lastBlockNumber,
-      subgraphUrl: 'https://api.thegraph.com/subgraphs/name/scopelift/spaymentpolygon',
+      subgraphUrl: 'https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaypolygon',
     };
 
-    // Get SPayment instance
-    spayment = new SPayment(ethersProvider, chainConfig);
+    // Get StealthPay instance
+    stealthpay = new StealthPay(ethersProvider, chainConfig);
   });
 
   describe('Initialization', () => {
     //当传递一个链式配置时，正确地初始化
     it('initializes correctly when passing a chain config', async () => {
       // URL provider
-      const spayment1 = new SPayment(jsonRpcProvider, chainConfig);
-      console.log('spayment1 chainId:', spayment1.chainConfig.chainId);
-      console.log('spayment1 spaymentAddress:', spayment1.chainConfig.spaymentAddress);
-      expect(spayment1.provider._isProvider).to.be.true;
-      expect(spayment1.chainConfig.spaymentAddress).to.equal(chainConfig.spaymentAddress);
-      expect(spayment1.chainConfig.startBlock).to.equal(chainConfig.startBlock);
-      expect(spayment1.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
+      const stealthpay1 = new StealthPay(jsonRpcProvider, chainConfig);
+      console.log('stealthpay1 chainId:', stealthpay1.chainConfig.chainId);
+      console.log('stealthpay1 stealthpayAddress:', stealthpay1.chainConfig.stealthpayAddress);
+      expect(stealthpay1.provider._isProvider).to.be.true;
+      expect(stealthpay1.chainConfig.stealthpayAddress).to.equal(chainConfig.stealthpayAddress);
+      expect(stealthpay1.chainConfig.startBlock).to.equal(chainConfig.startBlock);
+      expect(stealthpay1.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
 
       // Web3 provider
-      const spayment2 = new SPayment(ethersProvider, chainConfig);
-      expect(spayment2.provider._isProvider).to.be.true;
-      expect(spayment2.chainConfig.spaymentAddress).to.equal(chainConfig.spaymentAddress);
-      expect(spayment2.chainConfig.startBlock).to.equal(chainConfig.startBlock);
-      expect(spayment2.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
+      const stealthpay2 = new StealthPay(ethersProvider, chainConfig);
+      expect(stealthpay2.provider._isProvider).to.be.true;
+      expect(stealthpay2.chainConfig.stealthpayAddress).to.equal(chainConfig.stealthpayAddress);
+      expect(stealthpay2.chainConfig.startBlock).to.equal(chainConfig.startBlock);
+      expect(stealthpay2.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
 
-      console.log('spayment2 chainId:', spayment1.chainConfig.chainId);
-      console.log('spayment2 spaymentAddress:', spayment1.chainConfig.spaymentAddress);
+      console.log('stealthpay2 chainId:', stealthpay1.chainConfig.chainId);
+      console.log('stealthpay2 stealthpayAddress:', stealthpay1.chainConfig.stealthpayAddress);
     });
     //当传递一个默认的chainId时，可以正确地初始化
     it('initializes correctly when passing a default chainId', async () => {
       // --- Localhost ---
       // URL provider
-      // const spayment1 = new SPayment(jsonRpcProvider, 1337);
-      // expect(spayment1.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment1.chainConfig.startBlock).to.equal(8505089);
-      // expect(spayment1.chainConfig.subgraphUrl).to.equal(false);
+      // const stealthpay1 = new StealthPay(jsonRpcProvider, 1337);
+      // expect(stealthpay1.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay1.chainConfig.startBlock).to.equal(8505089);
+      // expect(stealthpay1.chainConfig.subgraphUrl).to.equal(false);
       // // Web3 provider
-      // const spayment2 = new SPayment(ethersProvider, 1337);
-      // expect(spayment2.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment2.chainConfig.startBlock).to.equal(8505089);
-      // expect(spayment2.chainConfig.subgraphUrl).to.equal(false);
+      // const stealthpay2 = new StealthPay(ethersProvider, 1337);
+      // expect(stealthpay2.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay2.chainConfig.startBlock).to.equal(8505089);
+      // expect(stealthpay2.chainConfig.subgraphUrl).to.equal(false);
       // --- Goerli ---
-      // const spayment3 = new SPayment(jsonRpcProvider, 5);
-      // expect(spayment3.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment3.chainConfig.startBlock).to.equal(7718444);
-      // expect(spayment3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/spaymentgoerli');
+      // const stealthpay3 = new StealthPay(jsonRpcProvider, 5);
+      // expect(stealthpay3.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay3.chainConfig.startBlock).to.equal(7718444);
+      // expect(stealthpay3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaygoerli');
       // // --- Mainnet ---
-      // const spayment4 = new SPayment(jsonRpcProvider, 1);
-      // expect(spayment4.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment4.chainConfig.startBlock).to.equal(12343914);
-      // expect(spayment4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/spaymentmainnet');
+      // const stealthpay4 = new StealthPay(jsonRpcProvider, 1);
+      // expect(stealthpay4.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay4.chainConfig.startBlock).to.equal(12343914);
+      // expect(stealthpay4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaymainnet');
       // // --- Optimism ---
-      // const spayment5 = new SPayment(jsonRpcProvider, 10);
-      // expect(spayment5.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment5.chainConfig.startBlock).to.equal(4069556);
-      // expect(spayment5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/spaymentoptimism'); // prettier-ignore
+      // const stealthpay5 = new StealthPay(jsonRpcProvider, 10);
+      // expect(stealthpay5.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay5.chainConfig.startBlock).to.equal(4069556);
+      // expect(stealthpay5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpayoptimism'); // prettier-ignore
       // // --- Polygon ---
-      // const spayment6 = new SPayment(jsonRpcProvider, 137);
-      // expect(spayment6.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment6.chainConfig.startBlock).to.equal(20717318);
-      // expect(spayment6.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/spaymentpolygon');
+      // const stealthpay6 = new StealthPay(jsonRpcProvider, 137);
+      // expect(stealthpay6.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay6.chainConfig.startBlock).to.equal(20717318);
+      // expect(stealthpay6.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpaypolygon');
       // // --- Arbitrum ---
-      // const spayment7 = new SPayment(jsonRpcProvider, 42161);
-      // expect(spayment7.chainConfig.spaymentAddress).to.equal('0x036F3416fED1a4b9eB59265ab24467315FB718a9');
-      // expect(spayment7.chainConfig.startBlock).to.equal(7285883);
-      // expect(spayment7.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/spaymentarbitrumone'); // prettier-ignore
+      // const stealthpay7 = new StealthPay(jsonRpcProvider, 42161);
+      // expect(stealthpay7.chainConfig.stealthpayAddress).to.equal('0x39C06e5630455166AeAE0bDedd07eddca765E7eA');
+      // expect(stealthpay7.chainConfig.startBlock).to.equal(7285883);
+      // expect(stealthpay7.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/cryptoadong/stealthpayarbitrumone'); // prettier-ignore
     });
     //验证错误网络IDS
     // it('does not allow invalid default chain IDs to be provided', async () => {
     //   const msg = 'Unsupported chain ID provided';
-    //   const constructor1 = () => new SPayment(jsonRpcProvider, 999);
-    //   const constructor2 = () => new SPayment(ethersProvider, 999);
+    //   const constructor1 = () => new StealthPay(jsonRpcProvider, 999);
+    //   const constructor2 = () => new StealthPay(ethersProvider, 999);
     //   expect(constructor1).to.throw(msg);.
 
     //   expect(constructor2).to.throw(msg);
@@ -171,7 +171,7 @@ describe('SPayment class', () => {
   //       const wallet = new Wallet(testPrivateKeys[i]);
   //       if (walletHardhat.address !== wallet.address) throw new Error('Address mismatch');
 
-  //       const { spendingKeyPair, viewingKeyPair } = await spayment.generatePrivateKeys(wallet);
+  //       const { spendingKeyPair, viewingKeyPair } = await stealthpay.generatePrivateKeys(wallet);
 
   //       expect(spendingKeyPair.privateKeyHex).to.have.length(66);
   //       expect(viewingKeyPair.privateKeyHex).to.have.length(66);
@@ -188,12 +188,12 @@ describe('SPayment class', () => {
 
     const mintAndApproveDai = async (signer: Wallet, user: string, amount: BigNumber) => {
       await dai.connect(signer).mint(user, amount);
-      await dai.connect(signer).approve(spayment.spaymentContract.address, ethers.constants.MaxUint256);
+      await dai.connect(signer).approve(stealthpay.stealthpayContract.address, ethers.constants.MaxUint256);
     };
 
     it('reverts if sender does not have enough tokens', async () => {
       const msg = `Insufficient balance to complete transfer. Has 0 tokens, tried to send ${quantity.toString()} tokens.`;
-      await expectRejection(spayment.send(sender, dai.address, quantity, receiver.address), msg);
+      await expectRejection(stealthpay.send(sender, dai.address, quantity, receiver.address), msg);
     });
 
     it('reverts if sender does not have enough ETH', async () => {
@@ -204,16 +204,16 @@ describe('SPayment class', () => {
 
     it('Without payload extension: send tokens, scan for them, withdraw them', async () => {
       // SENDER
-      // Mint Dai to sender, and approve the SPayment contract to spend their DAI
+      // Mint Dai to sender, and approve the StealthPay contract to spend their DAI
       await mintAndApproveDai(sender, sender.address, quantity);
 
-      // Send funds with SPayment
-      const { tx, stealthKeyPair } = await spayment.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
+      // Send funds with StealthPay
+      const { tx, stealthKeyPair } = await stealthpay.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
       // Receiver scans for funds sent to them
-      const { userAnnouncements } = await spayment.scan(receiver.publicKey, receiver.privateKey);
+      const { userAnnouncements } = await stealthpay.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
@@ -226,20 +226,20 @@ describe('SPayment class', () => {
       });
 
       // Now we withdraw the tokens
-      const stealthPrivateKey = SPayment.computeStealthPrivateKey(
+      const stealthPrivateKey = StealthPay.computeStealthPrivateKey(
         receiver.privateKey,
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
       verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
-      const withdrawTxToken = await spayment.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
+      const withdrawTxToken = await stealthpay.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
       await withdrawTxToken.wait();
       verifyEqualValues(await dai.balanceOf(destinationWallet.address), quantity);
       verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
 
       // And for good measure let's withdraw the rest of the ETH
       const initialEthBalance = await getEthBalance(stealthKeyPair.address);
-      const withdrawTxEth = await spayment.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
+      const withdrawTxEth = await stealthpay.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
       await withdrawTxEth.wait();
       const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
       const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawEthReceipt.effectiveGasPrice);
@@ -252,16 +252,16 @@ describe('SPayment class', () => {
 
     it('With payload extension: send tokens, scan for them, withdraw them', async () => {
       // SENDER
-      // Mint Dai to sender, and approve the SPayment contract to spend their DAI
+      // Mint Dai to sender, and approve the StealthPay contract to spend their DAI
       await mintAndApproveDai(sender, sender.address, quantity);
 
-      // Send funds with SPayment
-      const { tx, stealthKeyPair } = await spayment.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
+      // Send funds with StealthPay
+      const { tx, stealthKeyPair } = await stealthpay.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
       // Receiver scans for funds sent to them
-      const { userAnnouncements } = await spayment.scan(receiver.publicKey, receiver.privateKey);
+      const { userAnnouncements } = await stealthpay.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test withdraw by signature)
@@ -277,16 +277,16 @@ describe('SPayment class', () => {
       });
 
       // Get signature
-      const stealthPrivateKey = SPayment.computeStealthPrivateKey(
+      const stealthPrivateKey = StealthPay.computeStealthPrivateKey(
         receiver.privateKey,
         userAnnouncements[0].randomNumber
       );
-      const { v, r, s } = await SPayment.signWithdraw(
+      const { v, r, s } = await StealthPay.signWithdraw(
         stealthPrivateKey,
         (
           await ethersProvider.getNetwork()
         ).chainId,
-        spayment.spaymentContract.address,
+        stealthpay.stealthpayContract.address,
         destinationWallet.address,
         dai.address,
         sponsorWallet.address,
@@ -294,7 +294,7 @@ describe('SPayment class', () => {
       );
 
       // Relay transaction
-      await spayment.withdrawOnBehalf(
+      await stealthpay.withdrawOnBehalf(
         relayerWallet,
         stealthKeyPair.address,
         destinationWallet.address,
@@ -313,24 +313,24 @@ describe('SPayment class', () => {
 
     it('Without payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
-      // Send funds with SPayment
-      const { tx, stealthKeyPair } = await spayment.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey, overrides);
+      // Send funds with StealthPay
+      const { tx, stealthKeyPair } = await stealthpay.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey, overrides);
       await tx.wait();
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
 
       // RECEIVER
       // Receiver scans for funds sent to them
-      const { userAnnouncements } = await spayment.scan(receiver.publicKey, receiver.privateKey);
+      const { userAnnouncements } = await stealthpay.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)
       // Destination wallet should have a balance equal to amount sent minus gas cost
-      const stealthPrivateKey = SPayment.computeStealthPrivateKey(
+      const stealthPrivateKey = StealthPay.computeStealthPrivateKey(
         receiver.privateKey,
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
-      const withdrawTx = await spayment.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+      const withdrawTx = await stealthpay.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
       const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
@@ -340,23 +340,23 @@ describe('SPayment class', () => {
 
     it('With payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
-      // Send funds with SPayment
-      const { tx, stealthKeyPair } = await spayment.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, overrides);
+      // Send funds with StealthPay
+      const { tx, stealthKeyPair } = await stealthpay.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const { userAnnouncements } = await spayment.scan(receiver.publicKey, receiver.privateKey);
+      const { userAnnouncements } = await stealthpay.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)
       // Destination wallet should have a balance equal to amount sent minus gas cost
-      const stealthPrivateKey = SPayment.computeStealthPrivateKey(
+      const stealthPrivateKey = StealthPay.computeStealthPrivateKey(
         receiver.privateKey,
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
-      const withdrawTx = await spayment.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+      const withdrawTx = await stealthpay.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
       const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
@@ -375,19 +375,19 @@ describe('SPayment class', () => {
       const badChainId = '1.1';
       const errorMsg3 = `Invalid chainId provided in chainConfig. Got '${badChainId}'`;
       const errorMsg4 = "Invalid subgraphUrl provided in chainConfig. Got 'undefined'";
-      const spaymentAddress = '0x036F3416fED1a4b9eB59265ab24467315FB718a9'; // address does not matter here
+      const stealthpayAddress = '0x39C06e5630455166AeAE0bDedd07eddca765E7eA'; // address does not matter here
 
       // @ts-expect-error
-      expect(() => new SPayment(ethersProvider)).to.throw('chainConfig not provided');
+      expect(() => new StealthPay(ethersProvider)).to.throw('chainConfig not provided');
       // @ts-expect-error
-      expect(() => new SPayment(ethersProvider, {})).to.throw(errorMsg1);
+      expect(() => new StealthPay(ethersProvider, {})).to.throw(errorMsg1);
       // @ts-expect-error
-      expect(() => new SPayment(ethersProvider, { spaymentAddress })).to.throw(errorMsg1);
+      expect(() => new StealthPay(ethersProvider, { stealthpayAddress })).to.throw(errorMsg1);
       // @ts-expect-error
       expect(
         () =>
-          new SPayment(ethersProvider, {
-            spaymentAddress: '123',
+          new StealthPay(ethersProvider, {
+            stealthpayAddress: '123',
             startBlock: '1',
             subgraphUrl: false,
           })
@@ -395,8 +395,8 @@ describe('SPayment class', () => {
       expect(
         // @ts-expect-error
         () =>
-          new SPayment(ethersProvider, {
-            spaymentAddress: '123',
+          new StealthPay(ethersProvider, {
+            stealthpayAddress: '123',
             startBlock: 1,
             chainId: badChainId,
             subgraphUrl: false,
@@ -405,8 +405,8 @@ describe('SPayment class', () => {
       // @ts-expect-error
       expect(
         () =>
-          new SPayment(ethersProvider, {
-            spaymentAddress: '123',
+          new StealthPay(ethersProvider, {
+            stealthpayAddress: '123',
             startBlock: 1,
             chainId: 1,
           })
@@ -414,7 +414,7 @@ describe('SPayment class', () => {
       // @ts-expect-error
       expect(
         () =>
-          new SPayment(ethersProvider, {
+          new StealthPay(ethersProvider, {
             startBlock: 0,
             chainId: 4,
             subgraphUrl: false,
@@ -425,12 +425,12 @@ describe('SPayment class', () => {
     it('throws when isEth is passed a bad address', async () => {
       // These error messages come from ethers
       await expectRejection(
-        spayment.send(sender, '123', '1', ETH_ADDRESS),
+        stealthpay.send(sender, '123', '1', ETH_ADDRESS),
         'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
       await expectRejection(
         // @ts-expect-error
-        spayment.send(sender, 123, '1', ETH_ADDRESS),
+        stealthpay.send(sender, 123, '1', ETH_ADDRESS),
         'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
     });
@@ -443,10 +443,10 @@ describe('SPayment class', () => {
       const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
       // These error messages come from ethers
       await expectRejection(
-        SPayment.signWithdraw(
+        StealthPay.signWithdraw(
           privateKey,
           4,
-          spayment.spaymentContract.address,
+          stealthpay.stealthpayContract.address,
           badAddress,
           tokenAddress,
           goodAddress,
@@ -455,10 +455,10 @@ describe('SPayment class', () => {
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
       await expectRejection(
-        SPayment.signWithdraw(
+        StealthPay.signWithdraw(
           privateKey,
           4,
-          spayment.spaymentContract.address,
+          stealthpay.stealthpayContract.address,
           goodAddress,
           tokenAddress,
           badAddress,
@@ -467,7 +467,7 @@ describe('SPayment class', () => {
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
       await expectRejection(
-        SPayment.signWithdraw(privateKey, 4, badAddress, goodAddress, tokenAddress, goodAddress, '1'),
+        StealthPay.signWithdraw(privateKey, 4, badAddress, goodAddress, tokenAddress, goodAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
     });
@@ -480,10 +480,10 @@ describe('SPayment class', () => {
       const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
       await expectRejection(
         // @ts-expect-error
-        SPayment.signWithdraw(
+        StealthPay.signWithdraw(
           privateKey,
           badChainId,
-          spayment.spaymentContract.address,
+          stealthpay.stealthpayContract.address,
           address,
           tokenAddress,
           address,
@@ -500,10 +500,10 @@ describe('SPayment class', () => {
       const badData = 'qwerty';
       const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
       await expectRejection(
-        SPayment.signWithdraw(
+        StealthPay.signWithdraw(
           privateKey,
           4,
-          spayment.spaymentContract.address,
+          stealthpay.stealthpayContract.address,
           address,
           tokenAddress,
           address,

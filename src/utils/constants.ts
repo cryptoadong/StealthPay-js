@@ -57,6 +57,15 @@ export const ERC20_ABI = [
   'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 
+//Chain Link ETH-USD ABI
+export const ETHUSD_CHAINLINK_ABI = [
+  'function decimals() view returns (uint8)',
+  'function description() view returns (string)',
+  'function getRoundData(uint80 _roundId) view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt,uint80 answeredInRound)',
+  'function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt,uint80 answeredInRound)',
+  'function version() view returns (uint256)',
+];
+
 export const FORWARDING_STEALTH_KEY_RESOLVER_ABI = [
   'constructor(address _ens, address _fallbackResolver)',
   'event ABIChanged(bytes32 indexed node, uint256 indexed contentType)',
